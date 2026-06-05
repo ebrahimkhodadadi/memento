@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Info, AlertTriangle, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Info, AlertTriangle, RotateCcw } from 'lucide-react';
 import { SurvivalCurve } from './SurvivalCurve';
 import { PHILOSOPHICAL_QUOTES } from '../constants';
 import type { Profile, Settings } from '../types';
@@ -13,7 +12,6 @@ interface SidebarProps {
   quoteIndex: number;
   onNextQuote: () => void;
   t: any;
-  children?: React.ReactNode;
 }
 
 export function Sidebar({
@@ -23,10 +21,8 @@ export function Sidebar({
   mortalityProb10Y,
   quoteIndex,
   onNextQuote,
-  t,
-  children
+  t
 }: SidebarProps) {
-  const [isJournalExpanded, setIsJournalExpanded] = useState(true);
   const yearsLived = calculations.stats.lived.days / 365.25;
   const candleNumber = Math.floor(yearsLived) + 1;
 
@@ -185,35 +181,6 @@ export function Sidebar({
           </div>
         </div>
       </div>
-
-      {/* Collapsible Goals & Journal Card */}
-      {children && (
-        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '8px', transition: 'all 0.3s ease' }}>
-          <div 
-            onClick={() => setIsJournalExpanded(!isJournalExpanded)}
-            style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              userSelect: 'none'
-            }}
-          >
-            <h3 style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-              🎯 {settings.language === 'fa' ? 'اهداف و دفترچه یادداشت' : 'Goals & Journal'}
-            </h3>
-            <button className="btn btn-icon-only" style={{ border: 'none', background: 'transparent', padding: 2 }}>
-              {isJournalExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-          </div>
-
-          {isJournalExpanded && (
-            <div style={{ marginTop: '4px', borderTop: '1px solid var(--border)', paddingTop: '8px' }}>
-              {children}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Uncensored Death Probability & Obituary Reflection */}
       {settings.uncensoredMode && (

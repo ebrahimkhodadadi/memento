@@ -1,4 +1,4 @@
-import { Globe, Sun, Moon, Volume2, VolumeX, Music, Settings, User, Edit2 } from 'lucide-react';
+import { Globe, Sun, Moon, Volume2, VolumeX, Music, Settings, User, Edit2, BookOpen } from 'lucide-react';
 import type { Settings as SettingsType, Profile } from '../types';
 
 interface HeaderProps {
@@ -12,6 +12,8 @@ interface HeaderProps {
   onOpenProfilePicker: () => void;
   onEditProfile: () => void;
   onGoHome: () => void;
+  isRightSidebarOpen?: boolean;
+  onToggleRightSidebar?: () => void;
   t: any;
 }
 
@@ -26,6 +28,8 @@ export function Header({
   onOpenProfilePicker,
   onEditProfile,
   onGoHome,
+  isRightSidebarOpen,
+  onToggleRightSidebar,
   t
 }: HeaderProps) {
   return (
@@ -81,6 +85,17 @@ export function Header({
         >
           <Settings size={18} />
         </button>
+
+        {/* Goals & Journal Sidebar Toggle */}
+        {activeProfile && onToggleRightSidebar && (
+          <button 
+            className={`btn btn-icon-only ${isRightSidebarOpen ? 'btn-primary' : ''}`}
+            onClick={onToggleRightSidebar}
+            title={isRightSidebarOpen ? (settings.language === 'fa' ? 'بستن اهداف و دفترچه' : 'Hide Goals & Journal') : (settings.language === 'fa' ? 'نمایش اهداف و دفترچه' : 'Show Goals & Journal')}
+          >
+            <BookOpen size={18} />
+          </button>
+        )}
 
         {activeProfile && (
           <>

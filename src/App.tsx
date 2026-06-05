@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { BookOpen, X } from 'lucide-react';
 import type { Profile, ViewMode, JournalEntry, Milestone, ThemeName, Settings } from './types';
 import { DEFAULT_MILESTONES, PHILOSOPHICAL_QUOTES, TRANSLATIONS } from './constants';
 import { soundEngine } from './sound';
@@ -59,6 +60,7 @@ function App() {
   // Modals & Panels Toggles
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Default active tab is goals ('milestones') as requested
   const [activeTab, setActiveTab] = useState<'journal' | 'milestones' | 'uncensored'>('milestones');
   
@@ -659,6 +661,8 @@ function App() {
           setIsConfiguring(false);
           setSelectedUnitIndex(null);
         }}
+        isRightSidebarOpen={isRightSidebarOpen}
+        onToggleRightSidebar={() => setIsRightSidebarOpen(prev => !prev)}
         t={t}
       />
 
@@ -710,7 +714,7 @@ function App() {
         />
       ) : activeProfile && calculations && gridData ? (
         // 2. NO-SCROLL DASHBOARD MAIN INTERFACE
-        <div className="dashboard-layout">
+        <div className={`dashboard-layout ${isRightSidebarOpen ? 'with-right-sidebar' : 'without-right-sidebar'}`}>
           
           {/* COLUMN 1: SIDEBAR COMPONENT */}
           <Sidebar 
@@ -721,30 +725,7 @@ function App() {
             quoteIndex={quoteIndex}
             onNextQuote={() => setQuoteIndex((quoteIndex + 1) % PHILOSOPHICAL_QUOTES.length)}
             t={t}
-          >
-            {/* GOALS AND JOURNAL LOG TAB */}
-            <JournalTab 
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              activeProfileId={activeProfileId}
-              journal={journal}
-              customMilestones={customMilestones}
-              newMilestoneAge={newMilestoneAge}
-              setNewMilestoneAge={setNewMilestoneAge}
-              newMilestoneTitle={newMilestoneTitle}
-              setNewMilestoneTitle={setNewMilestoneTitle}
-              newMilestoneDesc={newMilestoneDesc}
-              setNewMilestoneDesc={setNewMilestoneDesc}
-              newMilestoneCat={newMilestoneCat}
-              setNewMilestoneCat={setNewMilestoneCat}
-              onAddMilestone={handleAddCustomMilestone}
-              onDeleteMilestone={handleDeleteCustomMilestone}
-              setViewMode={setViewMode}
-              onOpenNoteDrawer={handleUnitClick}
-              language={settings.language}
-              t={t}
-            />
-          </Sidebar>
+          />
 
           {/* COLUMN 2: MAIN WORKSPACE */}
           <main className="main-panel">
@@ -766,7 +747,60 @@ function App() {
               handleExportPng={handleExportPng}
               t={t}
             />
+
+            {/* Floating button to reveal collapsed goals & journal */}
+            {!isRightSidebarOpen && (
+              <button 
+                className="floating-sidebar-toggle"
+                onClick={() => setIsRightSidebarOpen(true)}
+                title={settings.language === 'fa' ? 'نمایش اهداف و دفترچه' : 'Show Goals & Journal'}
+              >
+                <BookOpen size={16} />
+                <span>{settings.language === 'fa' ? 'اهداف و دفترچه' : 'Goals & Journal'}</span>
+              </button>
+            )}
           </main>
+
+          {/* COLUMN 3: RIGHT COLLAPSIBLE SIDEBAR */}
+          <aside className={`right-sidebar-panel ${isRightSidebarOpen ? 'open' : 'collapsed'}`}>
+            <div className="glass-panel" style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '16px', gap: '12px', overflowY: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '8px', flexShrink: 0 }}>
+                <h3 style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  🎯 {settings.language === 'fa' ? 'اهداف و دفترچه' : 'Goals & Journal'}
+                </h3>
+                <button 
+                  className="btn btn-icon-only" 
+                  onClick={() => setIsRightSidebarOpen(false)}
+                  style={{ border: 'none', background: 'transparent', padding: 2 }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div style={{ flexGrow: 1, overflowY: 'auto', paddingRight: '2px' }}>
+                <JournalTab 
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  activeProfileId={activeProfileId}
+                  journal={journal}
+                  customMilestones={customMilestones}
+                  newMilestoneAge={newMilestoneAge}
+                  setNewMilestoneAge={setNewMilestoneAge}
+                  newMilestoneTitle={newMilestoneTitle}
+                  setNewMilestoneTitle={setNewMilestoneTitle}
+                  newMilestoneDesc={newMilestoneDesc}
+                  setNewMilestoneDesc={setNewMilestoneDesc}
+                  newMilestoneCat={newMilestoneCat}
+                  setNewMilestoneCat={setNewMilestoneCat}
+                  onAddMilestone={handleAddCustomMilestone}
+                  onDeleteMilestone={handleDeleteCustomMilestone}
+                  setViewMode={setViewMode}
+                  onOpenNoteDrawer={handleUnitClick}
+                  language={settings.language}
+                  t={t}
+                />
+              </div>
+            </div>
+          </aside>
         </div>
       ) : null}
 

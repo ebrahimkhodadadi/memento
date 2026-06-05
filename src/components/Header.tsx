@@ -1,4 +1,4 @@
-import { Globe, Sun, Moon, Volume2, VolumeX, Music, Settings, User, Edit2, BookOpen } from 'lucide-react';
+import { Globe, Sun, Moon, Volume2, VolumeX, Music, Settings, User, Edit2, BookOpen, PanelLeft } from 'lucide-react';
 import type { Settings as SettingsType, Profile } from '../types';
 
 interface HeaderProps {
@@ -12,6 +12,8 @@ interface HeaderProps {
   onOpenProfilePicker: () => void;
   onEditProfile: () => void;
   onGoHome: () => void;
+  isLeftSidebarOpen?: boolean;
+  onToggleLeftSidebar?: () => void;
   isRightSidebarOpen?: boolean;
   onToggleRightSidebar?: () => void;
   t: any;
@@ -28,6 +30,8 @@ export function Header({
   onOpenProfilePicker,
   onEditProfile,
   onGoHome,
+  isLeftSidebarOpen,
+  onToggleLeftSidebar,
   isRightSidebarOpen,
   onToggleRightSidebar,
   t
@@ -85,6 +89,17 @@ export function Header({
         >
           <Settings size={18} />
         </button>
+
+        {/* Left Sidebar (Stats) Toggle */}
+        {activeProfile && onToggleLeftSidebar && (
+          <button 
+            className={`btn btn-icon-only ${isLeftSidebarOpen ? 'active' : ''}`}
+            onClick={onToggleLeftSidebar}
+            title={isLeftSidebarOpen ? (settings.language === 'fa' ? 'بستن آمار و جزئیات' : 'Hide Stats & Details') : (settings.language === 'fa' ? 'نمایش آمار و جزئیات' : 'Show Stats & Details')}
+          >
+            <PanelLeft size={18} />
+          </button>
+        )}
 
         {/* Goals & Journal Sidebar Toggle */}
         {activeProfile && onToggleRightSidebar && (

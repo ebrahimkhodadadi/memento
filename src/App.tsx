@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { BookOpen, X } from 'lucide-react';
+import { BookOpen, X, BarChart2 } from 'lucide-react';
 import type { Profile, ViewMode, JournalEntry, Milestone, ThemeName, Settings } from './types';
 import { DEFAULT_MILESTONES, PHILOSOPHICAL_QUOTES, TRANSLATIONS } from './constants';
 import { soundEngine } from './sound';
@@ -61,6 +61,7 @@ function App() {
   // Modals & Panels Toggles
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Default active tab is goals ('milestones') as requested
   const [activeTab, setActiveTab] = useState<'journal' | 'milestones' | 'uncensored'>('milestones');
@@ -662,6 +663,8 @@ function App() {
           setIsConfiguring(false);
           setSelectedUnitIndex(null);
         }}
+        isLeftSidebarOpen={isLeftSidebarOpen}
+        onToggleLeftSidebar={() => setIsLeftSidebarOpen(prev => !prev)}
         isRightSidebarOpen={isRightSidebarOpen}
         onToggleRightSidebar={() => setIsRightSidebarOpen(prev => !prev)}
         t={t}
@@ -715,18 +718,20 @@ function App() {
         />
       ) : activeProfile && calculations && gridData ? (
         // 2. NO-SCROLL DASHBOARD MAIN INTERFACE
-        <div className={`dashboard-layout ${isRightSidebarOpen ? 'with-right-sidebar' : 'without-right-sidebar'} show-col-${activeColumn}`}>
+        <div className={`dashboard-layout ${isLeftSidebarOpen ? 'left-open' : 'left-collapsed'} ${isRightSidebarOpen ? 'right-open' : 'right-collapsed'} show-col-${activeColumn}`}>
           
           {/* COLUMN 1: SIDEBAR COMPONENT */}
-          <Sidebar 
-            activeProfile={activeProfile}
-            calculations={calculations}
-            settings={settings}
-            mortalityProb10Y={mortalityProb10Y}
-            quoteIndex={quoteIndex}
-            onNextQuote={() => setQuoteIndex((quoteIndex + 1) % PHILOSOPHICAL_QUOTES.length)}
-            t={t}
-          />
+          <aside className={`sidebar-column-wrapper ${isLeftSidebarOpen ? 'open' : 'collapsed'}`}>
+            <Sidebar 
+              activeProfile={activeProfile}
+              calculations={calculations}
+              settings={settings}
+              mortalityProb10Y={mortalityProb10Y}
+              quoteIndex={quoteIndex}
+              onNextQuote={() => setQuoteIndex((quoteIndex + 1) % PHILOSOPHICAL_QUOTES.length)}
+              t={t}
+            />
+          </aside>
 
           {/* COLUMN 2: MAIN WORKSPACE */}
           <main className="main-panel">
@@ -748,6 +753,18 @@ function App() {
               handleExportPng={handleExportPng}
               t={t}
             />
+
+            {/* Floating button to reveal collapsed stats */}
+            {!isLeftSidebarOpen && (
+              <button 
+                className="floating-left-sidebar-toggle"
+                onClick={() => setIsLeftSidebarOpen(true)}
+                title={settings.language === 'fa' ? 'نمایش آمار و جزئیات' : 'Show Stats & Details'}
+              >
+                <BarChart2 size={16} />
+                <span>{settings.language === 'fa' ? 'آمار و جزئیات' : 'Stats & Details'}</span>
+              </button>
+            )}
 
             {/* Floating button to reveal collapsed goals & journal */}
             {!isRightSidebarOpen && (

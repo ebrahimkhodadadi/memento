@@ -89,7 +89,7 @@ export function Header({
         {/* Goals & Journal Sidebar Toggle */}
         {activeProfile && onToggleRightSidebar && (
           <button 
-            className={`btn btn-icon-only ${isRightSidebarOpen ? 'btn-primary' : ''}`}
+            className={`btn btn-icon-only ${isRightSidebarOpen ? 'active' : ''}`}
             onClick={onToggleRightSidebar}
             title={isRightSidebarOpen ? (settings.language === 'fa' ? 'بستن اهداف و دفترچه' : 'Hide Goals & Journal') : (settings.language === 'fa' ? 'نمایش اهداف و دفترچه' : 'Show Goals & Journal')}
           >

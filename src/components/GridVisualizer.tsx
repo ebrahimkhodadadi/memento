@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Share2 } from 'lucide-react';
 import type { ViewMode, Settings, JournalEntry, Milestone } from '../types';
 import { soundEngine } from '../sound';
@@ -35,6 +36,54 @@ export function GridVisualizer({
   handleExportPng,
   t
 }: GridVisualizerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridSize, setGridSize] = useState({ width: 0, height: 0 });
+
+  // Measure grid size when viewMode or gridData changes
+  useEffect(() => {
+    if (gridRef.current) {
+      setGridSize({
+        width: gridRef.current.offsetWidth,
+        height: gridRef.current.offsetHeight
+      });
+    }
+  }, [viewMode, gridData.totalUnits]);
+
+  // Calculate and set the zoom level to fit the grid perfectly inside the container
+  const handleResetZoom = useCallback(() => {
+    if (!containerRef.current || !gridRef.current) return;
+
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = containerRef.current.clientHeight;
+
+    const gridWidth = gridRef.current.offsetWidth;
+    const gridHeight = gridRef.current.offsetHeight;
+
+    if (gridWidth === 0 || gridHeight === 0) return;
+
+    // Use padding (16px left + 16px right = 32px) and 16px safety margin = 48px
+    const targetWidth = Math.max(100, containerWidth - 48);
+    const targetHeight = Math.max(100, containerHeight - 48);
+
+    const scaleX = targetWidth / gridWidth;
+    const scaleY = targetHeight / gridHeight;
+
+    // Prioritize height so it fits vertically without scrolling, then clamp by width
+    const fitZoom = Math.min(scaleX, scaleY);
+    const finalZoom = Math.max(0.15, Math.min(3.0, fitZoom));
+
+    setZoomLevel(finalZoom);
+    setGridSize({ width: gridWidth, height: gridHeight });
+  }, [setZoomLevel]);
+
+  // Auto-fit when the viewMode changes or component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleResetZoom();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [viewMode, handleResetZoom]);
   return (
     <div className="glass-panel visualization-panel">
       <div className="view-selector">
@@ -68,10 +117,10 @@ export function GridVisualizer({
           <button className="btn btn-icon-only" onClick={() => setZoomLevel(z => Math.max(0.5, z - 0.15))} title={t.zoomOut}>
             <ZoomOut size={14} />
           </button>
-          <button className="btn btn-icon-only" onClick={() => setZoomLevel(1)} title={t.resetZoom}>
+          <button className="btn btn-icon-only" onClick={handleResetZoom} title={t.resetZoom}>
             <RotateCcw size={14} />
           </button>
-          <button className="btn btn-primary" onClick={handleExportPng}>
+          <button className="btn" onClick={handleExportPng}>
             <Share2 size={14} />
             <span>{t.exportPng}</span>
           </button>
@@ -79,12 +128,20 @@ export function GridVisualizer({
       </div>
 
       {/* Grid Container */}
-      <div className="grid-zoom-container">
+      <div className="grid-zoom-container" ref={containerRef}>
         <div 
           className="grid-wrapper" 
-          style={{ transform: `scale(${zoomLevel})` }}
+          style={{ 
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: 'top center',
+            width: gridSize.width ? `${gridSize.width}px` : 'auto',
+            height: gridSize.height ? `${gridSize.height}px` : 'auto',
+            marginBottom: gridSize.height ? `${gridSize.height * (zoomLevel - 1)}px` : '0px',
+            marginLeft: gridSize.width ? `${(gridSize.width * (zoomLevel - 1)) / 2}px` : '0px',
+            marginRight: gridSize.width ? `${(gridSize.width * (zoomLevel - 1)) / 2}px` : '0px'
+          }}
         >
-          <div className={`memento-grid ${viewMode}`}>
+          <div className={`memento-grid ${viewMode}`} ref={gridRef}>
             {Array.from({ length: gridData.totalUnits }).map((_, index) => {
               const isLived = index < gridData.currentUnitIndex;
               const isCurrent = index === gridData.currentUnitIndex;

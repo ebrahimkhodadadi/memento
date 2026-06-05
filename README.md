@@ -2,6 +2,8 @@
 
 [English](#english) | [فارسی](#persian)
 
+![Memento Mori Screenshot](screenshot.png)
+
 ---
 
 <a name="english"></a>

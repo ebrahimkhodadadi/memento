@@ -714,6 +714,7 @@ input:focus, select:focus, textarea:focus {
   display: grid;
   gap: 3px;
   margin: 0 auto;
+  direction: ltr !important;
 }
 
 .memento-grid.weeks {

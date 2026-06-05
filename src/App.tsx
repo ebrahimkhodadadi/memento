@@ -721,29 +721,7 @@ function App() {
             quoteIndex={quoteIndex}
             onNextQuote={() => setQuoteIndex((quoteIndex + 1) % PHILOSOPHICAL_QUOTES.length)}
             t={t}
-          />
-
-          {/* COLUMN 2: MAIN WORKSPACE */}
-          <main className="main-panel">
-            
-            {/* INTERACTIVE GRID VISUALIZER */}
-            <GridVisualizer 
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              zoomLevel={zoomLevel}
-              setZoomLevel={setZoomLevel}
-              gridData={gridData}
-              journal={journal}
-              getUnitNoteKey={getUnitNoteKey}
-              getUnitMilestones={getUnitMilestones}
-              handleUnitClick={handleUnitClick}
-              handleUnitMouseEnter={handleUnitMouseEnter}
-              setHoveredUnitIndex={setHoveredUnitIndex}
-              settings={settings}
-              handleExportPng={handleExportPng}
-              t={t}
-            />
-
+          >
             {/* GOALS AND JOURNAL LOG TAB */}
             <JournalTab 
               activeTab={activeTab}
@@ -766,7 +744,28 @@ function App() {
               language={settings.language}
               t={t}
             />
+          </Sidebar>
 
+          {/* COLUMN 2: MAIN WORKSPACE */}
+          <main className="main-panel">
+            
+            {/* INTERACTIVE GRID VISUALIZER */}
+            <GridVisualizer 
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              zoomLevel={zoomLevel}
+              setZoomLevel={setZoomLevel}
+              gridData={gridData}
+              journal={journal}
+              getUnitNoteKey={getUnitNoteKey}
+              getUnitMilestones={getUnitMilestones}
+              handleUnitClick={handleUnitClick}
+              handleUnitMouseEnter={handleUnitMouseEnter}
+              setHoveredUnitIndex={setHoveredUnitIndex}
+              settings={settings}
+              handleExportPng={handleExportPng}
+              t={t}
+            />
           </main>
         </div>
       ) : null}

@@ -426,7 +426,7 @@ body.rtl .sidebar-panel {
 
 .main-panel {
   height: 100%;
-  overflow-y: auto;
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -652,6 +652,8 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex-grow: 1;
+  height: 100%;
 }
 
 .view-selector {
@@ -693,7 +695,8 @@ input:focus, select:focus, textarea:focus {
   border-radius: 10px;
   background: var(--card-bg);
   padding: 16px;
-  height: 480px; /* Locked size to fit on screen */
+  flex-grow: 1;
+  height: 0;
   position: relative;
   display: flex;
   align-items: flex-start;

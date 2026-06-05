@@ -108,8 +108,13 @@ function App() {
     localStorage.setItem('memento_settings', JSON.stringify(settings));
     // Apply theme, dark mode class, & language to elements
     document.documentElement.setAttribute('data-theme', settings.theme);
+    document.documentElement.setAttribute('lang', settings.language);
+    document.documentElement.setAttribute('dir', settings.language === 'fa' ? 'rtl' : 'ltr');
     document.body.className = settings.language === 'fa' ? 'rtl' : 'ltr';
     document.body.classList.toggle('dark', settings.darkMode);
+    document.title = settings.language === 'fa' 
+      ? 'Memento Mori - زندگی‌شمار و شبیه‌ساز طول عمر فلسفی' 
+      : 'Memento Mori - Life Visualizer & Countdown';
   }, [settings]);
 
   useEffect(() => {

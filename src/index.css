@@ -1215,3 +1215,200 @@ body.rtl .journal-item {
   color: var(--text);
 }
 
+/* Hide mobile bottom navigation bar on desktop by default */
+.mobile-bottom-nav {
+  display: none;
+}
+
+/* --- Mobile Responsive Enhancements (max-width: 768px) --- */
+@media (max-width: 768px) {
+  /* Prevent full-screen lock scroll issue on mobile by adjusting container & layout */
+  .app-container {
+    padding: 8px;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-y: auto; /* Allow scrolling on mobile */
+    padding-bottom: 80px; /* Space for the bottom navigation bar */
+  }
+
+  /* Header adjustments for mobile */
+  .app-header {
+    flex-direction: column;
+    height: auto !important;
+    padding: 12px;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .brand-section {
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .header-controls {
+    justify-content: center;
+    flex-wrap: wrap; /* Allow wrapping of buttons so they don't break layout */
+    width: 100%;
+    gap: 6px;
+  }
+
+  .header-controls .btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* Countdown Banner adjustments */
+  .countdown-banner {
+    padding: 10px 8px;
+  }
+
+  .countdown-banner-digits {
+    font-size: 1.4rem;
+  }
+
+  .countdown-banner-blocks {
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .countdown-block {
+    min-width: 50px;
+    padding: 6px 8px;
+  }
+
+  .countdown-block-value {
+    font-size: 1.5rem;
+  }
+
+  .countdown-block-label {
+    font-size: 0.65rem;
+  }
+
+  /* View Selector and Grid Sizing on Mobile */
+  .view-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .view-selector .segmented-control {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .view-selector div[style*="display: flex"] {
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  /* Dashboard Layout & Tabbed Navigation */
+  .dashboard-layout.with-right-sidebar,
+  .dashboard-layout.without-right-sidebar {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 400px;
+    overflow: visible;
+    margin-bottom: 20px;
+  }
+
+  /* Hide columns unless they match the active column class */
+  .dashboard-layout .sidebar-panel,
+  .dashboard-layout .main-panel,
+  .dashboard-layout .right-sidebar-panel {
+    display: none !important;
+    height: auto !important;
+  }
+
+  .dashboard-layout.show-col-stats .sidebar-panel {
+    display: flex !important;
+  }
+
+  .dashboard-layout.show-col-grid .main-panel {
+    display: flex !important;
+  }
+
+  .dashboard-layout.show-col-journal .right-sidebar-panel {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Floating sidebar button on mobile is redundant due to bottom tabs */
+  .floating-sidebar-toggle {
+    display: none !important;
+  }
+
+  /* Mobile Bottom Navigation Bar styling */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    padding: 4px 12px;
+  }
+
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    flex-grow: 1;
+    height: 100%;
+    transition: var(--transition);
+    border-radius: 8px;
+    gap: 3px;
+  }
+
+  .mobile-nav-btn .icon {
+    font-size: 1.25rem;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-nav-btn.active {
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .mobile-nav-btn.active .icon {
+    transform: scale(1.15);
+  }
+
+  /* Form and Dialog styling for mobile */
+  .form-row, .lifestyle-grid, .jalali-select-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .config-container {
+    margin: 10px auto;
+    padding: 12px;
+    max-height: none;
+    width: 100% !important;
+  }
+
+  .stats-panel-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

@@ -56,6 +56,7 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('weeks');
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null);
+  const [activeColumn, setActiveColumn] = useState<'stats' | 'grid' | 'journal'>('grid');
   
   // Modals & Panels Toggles
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -714,7 +715,7 @@ function App() {
         />
       ) : activeProfile && calculations && gridData ? (
         // 2. NO-SCROLL DASHBOARD MAIN INTERFACE
-        <div className={`dashboard-layout ${isRightSidebarOpen ? 'with-right-sidebar' : 'without-right-sidebar'}`}>
+        <div className={`dashboard-layout ${isRightSidebarOpen ? 'with-right-sidebar' : 'without-right-sidebar'} show-col-${activeColumn}`}>
           
           {/* COLUMN 1: SIDEBAR COMPONENT */}
           <Sidebar 
@@ -882,6 +883,32 @@ function App() {
               📝 {journal[getUnitNoteKey(hoveredUnitIndex)].title}
             </div>
           )}
+        </div>
+      )}
+
+      {activeProfile && !isConfiguring && (
+        <div className="mobile-bottom-nav">
+          <button 
+            className={`mobile-nav-btn ${activeColumn === 'stats' ? 'active' : ''}`}
+            onClick={() => setActiveColumn('stats')}
+          >
+            <span className="icon">📊</span>
+            <span className="label">{settings.language === 'fa' ? 'جزئیات و آمار' : 'Stats'}</span>
+          </button>
+          <button 
+            className={`mobile-nav-btn ${activeColumn === 'grid' ? 'active' : ''}`}
+            onClick={() => setActiveColumn('grid')}
+          >
+            <span className="icon">🗓️</span>
+            <span className="label">{settings.language === 'fa' ? 'جدول زندگی' : 'Life Grid'}</span>
+          </button>
+          <button 
+            className={`mobile-nav-btn ${activeColumn === 'journal' ? 'active' : ''}`}
+            onClick={() => setActiveColumn('journal')}
+          >
+            <span className="icon">🎯</span>
+            <span className="label">{settings.language === 'fa' ? 'اهداف و دفترچه' : 'Goals & Journal'}</span>
+          </button>
         </div>
       )}
     </div>

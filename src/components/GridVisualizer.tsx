@@ -50,6 +50,8 @@ export function GridVisualizer({
     }
   }, [viewMode, gridData.totalUnits]);
 
+  const [isZoomFit, setIsZoomFit] = useState(true);
+
   // Calculate and set the zoom level to fit the grid perfectly inside the container
   const handleResetZoom = useCallback(() => {
     if (!containerRef.current || !gridRef.current) return;
@@ -77,11 +79,45 @@ export function GridVisualizer({
     setGridSize({ width: gridWidth, height: gridHeight });
   }, [setZoomLevel]);
 
-  // Auto-fit when the viewMode changes or component mounts
+  // Handle manual zoom adjustments
+  const handleZoomIn = () => {
+    setIsZoomFit(false);
+    setZoomLevel(z => Math.min(3.0, z + 0.15));
+  };
+
+  const handleZoomOut = () => {
+    setIsZoomFit(false);
+    setZoomLevel(z => Math.max(0.15, z - 0.15));
+  };
+
+  const handleResetClick = () => {
+    setIsZoomFit(true);
+    handleResetZoom();
+  };
+
+  // ResizeObserver to automatically refit when container size changes (if in fit mode)
   useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver(() => {
+      if (isZoomFit) {
+        handleResetZoom();
+      }
+    });
+
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isZoomFit, handleResetZoom]);
+
+  // Reset to auto-fit whenever viewMode changes
+  useEffect(() => {
+    setIsZoomFit(true);
     const timer = setTimeout(() => {
       handleResetZoom();
-    }, 100);
+    }, 50);
     return () => clearTimeout(timer);
   }, [viewMode, handleResetZoom]);
   return (
@@ -111,13 +147,13 @@ export function GridVisualizer({
 
         {/* Grid zooming controls & PNG Export */}
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button className="btn btn-icon-only" onClick={() => setZoomLevel(z => Math.min(2.5, z + 0.15))} title={t.zoomIn}>
+          <button className="btn btn-icon-only" onClick={handleZoomIn} title={t.zoomIn}>
             <ZoomIn size={14} />
           </button>
-          <button className="btn btn-icon-only" onClick={() => setZoomLevel(z => Math.max(0.5, z - 0.15))} title={t.zoomOut}>
+          <button className="btn btn-icon-only" onClick={handleZoomOut} title={t.zoomOut}>
             <ZoomOut size={14} />
           </button>
-          <button className="btn btn-icon-only" onClick={handleResetZoom} title={t.resetZoom}>
+          <button className="btn btn-icon-only" onClick={handleResetClick} title={t.resetZoom}>
             <RotateCcw size={14} />
           </button>
           <button className="btn" onClick={handleExportPng}>

@@ -98,7 +98,35 @@ export function NoteDrawer({
           </div>
 
           <div className="form-group">
-            <label>{t.writeJournal}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <label style={{ margin: 0 }}>{t.writeJournal}</label>
+              <button
+                type="button"
+                className="badge"
+                onClick={() => {
+                  const prompts = settings.language === 'fa' ? [
+                    "چه چیزی در حال حاضر در کنترل من است و چه چیزی خارج از کنترل من؟",
+                    "اگر امروز آخرین روز زندگی من بود، این دوره را چگونه سپری می‌کردم؟",
+                    "با چه مانعی روبرو شدم و چطور می‌توانم آن را به عنوان یک فرصت ببینم؟",
+                    "آیا خشم یا حسرت را در خود نگه داشته‌ام؟ فایده آن برای من چیست؟",
+                    "چه کاری را خوب انجام دادم، چه کاری را بد، و چگونه می‌توانم بهتر شوم؟",
+                    "چگونه می‌توانم برای این لحظه خاص از زندگی‌ام شکرگزار باشم؟"
+                  ] : [
+                    "What is in my control right now? What is outside my control?",
+                    "If today were my last day, how would I spend this period?",
+                    "What obstacle did I face, and how can I see it as an opportunity?",
+                    "Am I holding onto anger or regret? What is the utility of it?",
+                    "What did I do well, what did I do poorly, and how can I improve?",
+                    "How can I practice gratitude for this specific moment in my life?"
+                  ];
+                  const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+                  setNoteContent(noteContent ? `${noteContent}\n\n[${randomPrompt}]` : `[${randomPrompt}]`);
+                }}
+                style={{ border: '1px solid var(--accent)', background: 'transparent', cursor: 'pointer', fontSize: '0.65rem', padding: '2px 6px' }}
+              >
+                💡 {settings.language === 'fa' ? 'درج سوال فلسفی (رواق‌گرایی)' : 'Insert Stoic Prompt'}
+              </button>
+            </div>
             <textarea 
               value={noteContent} 
               onChange={e => setNoteContent(e.target.value)} 

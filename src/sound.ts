@@ -104,6 +104,13 @@ class SoundEngine {
       this.tickGain?.gain.setTargetAtTime(0.4, this.ctx!.currentTime, 0.1);
     } else {
       this.tickGain?.gain.setTargetAtTime(0, this.ctx?.currentTime || 0, 0.1);
+      if (!this.isAmbientEnabled) {
+        setTimeout(() => {
+          if (!this.isTickingEnabled && !this.isAmbientEnabled) {
+            this.cleanup();
+          }
+        }, 200);
+      }
     }
   }
 
@@ -119,6 +126,11 @@ class SoundEngine {
     } else {
       this.padGain?.gain.setTargetAtTime(0, this.ctx?.currentTime || 0, 1.0);
       this.stopAmbientLoop();
+      setTimeout(() => {
+        if (!this.isTickingEnabled && !this.isAmbientEnabled) {
+          this.cleanup();
+        }
+      }, 1200);
     }
   }
 
@@ -206,6 +218,41 @@ class SoundEngine {
         g.gain.cancelScheduledValues(now);
         g.gain.setTargetAtTime(0, now, 1.0);
       });
+    }
+  }
+
+  private cleanup() {
+    if (this.ambientInterval) {
+      clearInterval(this.ambientInterval);
+      this.ambientInterval = null;
+    }
+    
+    // Stop and disconnect all oscillators
+    this.padOscillators.forEach(osc => {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (e) {}
+    });
+    this.padOscillators = [];
+    this.padGains = [];
+    
+    if (this.tickGain) {
+      try { this.tickGain.disconnect(); } catch(e) {}
+      this.tickGain = null;
+    }
+    if (this.padGain) {
+      try { this.padGain.disconnect(); } catch(e) {}
+      this.padGain = null;
+    }
+    if (this.masterGain) {
+      try { this.masterGain.disconnect(); } catch(e) {}
+      this.masterGain = null;
+    }
+    
+    if (this.ctx) {
+      try { this.ctx.close(); } catch(e) {}
+      this.ctx = null;
     }
   }
 }

@@ -557,55 +557,58 @@ function App() {
 
     const colors = getThemeColors(settings.theme);
 
-    // Draw background
-    ctx.fillStyle = colors.bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw Title
-    ctx.font = settings.language === 'fa' ? '600 24px IRANSans, sans-serif' : '600 24px Georgia, serif';
-    ctx.fillStyle = colors.text;
-    ctx.fillText("MEMENTO MORI", padding, padding + 28);
-    
-    // Draw Profile Info
-    ctx.font = settings.language === 'fa' ? '14px IRANSans, sans-serif' : '14px Inter, sans-serif';
-    ctx.fillStyle = colors.subtext;
-    ctx.fillText(
-      `${activeProfile.name} • ${calculations.age.years} ${t.years} ${t.lived} • ${calculations.livedPercent.toFixed(2)}%`, 
-      padding, 
-      padding + 52
-    );
-
-    // Draw units
-    for (let i = 0; i < gridData.totalUnits; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const x = padding + col * (squareSize + gapSize);
-      const y = padding + headerHeight + row * (squareSize + gapSize);
+    // Wait for custom fonts to load before drawing to prevent fallback system font issues
+    document.fonts.ready.then(() => {
+      // Draw background
+      ctx.fillStyle = colors.bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      if (i === gridData.currentUnitIndex) {
-        ctx.fillStyle = colors.current;
-      } else if (i < gridData.currentUnitIndex) {
-        ctx.fillStyle = colors.lived;
-      } else {
-        ctx.fillStyle = colors.empty;
+      // Draw Title
+      ctx.font = settings.language === 'fa' ? '600 24px IRANSans, sans-serif' : '600 24px Georgia, serif';
+      ctx.fillStyle = colors.text;
+      ctx.fillText("MEMENTO MORI", padding, padding + 28);
+      
+      // Draw Profile Info
+      ctx.font = settings.language === 'fa' ? '14px IRANSans, sans-serif' : '14px Inter, sans-serif';
+      ctx.fillStyle = colors.subtext;
+      ctx.fillText(
+        `${activeProfile.name} • ${calculations.age.years} ${t.years} ${t.lived} • ${calculations.livedPercent.toFixed(2)}%`, 
+        padding, 
+        padding + 52
+      );
+
+      // Draw units
+      for (let i = 0; i < gridData.totalUnits; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = padding + col * (squareSize + gapSize);
+        const y = padding + headerHeight + row * (squareSize + gapSize);
+        
+        if (i === gridData.currentUnitIndex) {
+          ctx.fillStyle = colors.current;
+        } else if (i < gridData.currentUnitIndex) {
+          ctx.fillStyle = colors.lived;
+        } else {
+          ctx.fillStyle = colors.empty;
+        }
+        
+        ctx.fillRect(x, y, squareSize, squareSize);
       }
-      
-      ctx.fillRect(x, y, squareSize, squareSize);
-    }
 
-    // Draw Footer
-    ctx.font = settings.language === 'fa' ? '11px IRANSans, sans-serif' : 'italic 11px Georgia, serif';
-    ctx.fillStyle = colors.subtext;
-    ctx.textAlign = 'center';
-    const quote = PHILOSOPHICAL_QUOTES[quoteIndex];
-    const quoteText = settings.language === 'fa' ? quote.quoteFa : quote.quoteEn;
-    const authorText = settings.language === 'fa' ? quote.authorFa : quote.authorEn;
-    ctx.fillText(`"${quoteText}" — ${authorText}`, canvas.width / 2, canvas.height - 20);
-    
-    const link = document.createElement('a');
-    link.download = `${activeProfile.name}_memento_mori_${viewMode}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+      // Draw Footer
+      ctx.font = settings.language === 'fa' ? '11px IRANSans, sans-serif' : 'italic 11px Georgia, serif';
+      ctx.fillStyle = colors.subtext;
+      ctx.textAlign = 'center';
+      const quote = PHILOSOPHICAL_QUOTES[quoteIndex];
+      const quoteText = settings.language === 'fa' ? quote.quoteFa : quote.quoteEn;
+      const authorText = settings.language === 'fa' ? quote.authorFa : quote.authorEn;
+      ctx.fillText(`"${quoteText}" — ${authorText}`, canvas.width / 2, canvas.height - 20);
+      
+      const link = document.createElement('a');
+      link.download = `${activeProfile.name}_memento_mori_${viewMode}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
   };
 
   const getUnitDateRange = (index: number) => {

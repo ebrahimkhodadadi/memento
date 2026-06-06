@@ -86,6 +86,77 @@ export function SettingsModal({
             </div>
             <p style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '4px' }}>{t.uncensoredDesc}</p>
           </div>
+
+          {/* Backup & Restore Data (Import/Export JSON) */}
+          <div className="form-group" style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '16px' }}>
+            <label>{settings.language === 'fa' ? 'پشتیبان‌گیری و بازیابی داده‌ها' : 'Backup & Restore Data'}</label>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <button 
+                type="button" 
+                className="btn" 
+                onClick={() => {
+                  const data = {
+                    settings: localStorage.getItem('memento_settings'),
+                    profiles: localStorage.getItem('memento_profiles'),
+                    activeProfileId: localStorage.getItem('memento_active_profile_id'),
+                    journal: localStorage.getItem('memento_journal'),
+                    customMilestones: localStorage.getItem('memento_custom_milestones')
+                  };
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `memento_mori_backup_${new Date().toISOString().split('T')[0]}.json`;
+                  link.click();
+                  URL.revokeObjectURL(url);
+                }} 
+                style={{ flex: 1 }}
+              >
+                💾 {settings.language === 'fa' ? 'خروجی بکاپ' : 'Export Backup'}
+              </button>
+              
+              <label className="btn" style={{ flex: 1, cursor: 'pointer', margin: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                📁 {settings.language === 'fa' ? 'وارد کردن بکاپ' : 'Import Backup'}
+                <input 
+                  type="file" 
+                  accept=".json" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      try {
+                        const data = JSON.parse(event.target?.result as string);
+                        if (data.profiles || data.journal || data.settings) {
+                          if (data.settings) localStorage.setItem('memento_settings', data.settings);
+                          if (data.profiles) localStorage.setItem('memento_profiles', data.profiles);
+                          if (data.activeProfileId) localStorage.setItem('memento_active_profile_id', data.activeProfileId);
+                          if (data.journal) localStorage.setItem('memento_journal', data.journal);
+                          if (data.customMilestones) localStorage.setItem('memento_custom_milestones', data.customMilestones);
+
+                          alert(settings.language === 'fa' 
+                            ? 'داده‌ها با موفقیت بازیابی شدند. برنامه مجدداً بارگذاری می‌شود.' 
+                            : 'Data restored successfully. Reloading application.');
+                          window.location.reload();
+                        } else {
+                          alert(settings.language === 'fa' ? 'فرمت فایل بکاپ نامعتبر است.' : 'Invalid backup file format.');
+                        }
+                      } catch (err) {
+                        alert(settings.language === 'fa' ? 'خطا در خواندن فایل بکاپ.' : 'Error parsing backup file.');
+                      }
+                    };
+                    reader.readAsText(file);
+                  }} 
+                  style={{ display: 'none' }} 
+                />
+              </label>
+            </div>
+            <p style={{ fontSize: '0.7rem', opacity: 0.8, marginTop: '6px', lineHeight: 1.4 }}>
+              {settings.language === 'fa' 
+                ? 'اطلاعات پروفایل‌ها، یادداشت‌ها و اهداف خود را به صورت یک فایل ذخیره کرده یا بازیابی کنید.'
+                : 'Save or restore your profiles, journals, and milestones to/from a local JSON file.'}
+            </p>
+          </div>
         </div>
       </div>
     </div>

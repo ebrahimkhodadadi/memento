@@ -87,6 +87,30 @@ export function SettingsModal({
             <p style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '4px' }}>{t.uncensoredDesc}</p>
           </div>
 
+          <div className="form-group">
+            <label>{t.webNotifications}</label>
+            <div 
+              className={`lifestyle-card ${settings.notificationsEnabled ? 'active' : ''}`}
+              onClick={async () => {
+                const newValue = !settings.notificationsEnabled;
+                if (newValue && 'Notification' in window) {
+                  const permission = await Notification.requestPermission();
+                  if (permission !== 'granted') {
+                    alert(settings.language === 'fa' 
+                      ? 'اجازه اعلانات داده نشد. لطفاً دسترسی را از تنظیمات مرورگر خود فعال کنید.' 
+                      : 'Notification permission denied. Please enable permission in your browser settings.');
+                    return;
+                  }
+                }
+                setSettings(prev => ({ ...prev, notificationsEnabled: newValue }));
+              }}
+            >
+              <input type="checkbox" checked={!!settings.notificationsEnabled} readOnly />
+              <span>{t.webNotifications}</span>
+            </div>
+            <p style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '4px' }}>{t.webNotificationsDesc}</p>
+          </div>
+
           {/* Backup & Restore Data (Import/Export JSON) */}
           <div className="form-group" style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '16px' }}>
             <label>{settings.language === 'fa' ? 'پشتیبان‌گیری و بازیابی داده‌ها' : 'Backup & Restore Data'}</label>

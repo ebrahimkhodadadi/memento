@@ -5,16 +5,19 @@ import { DEFAULT_MILESTONES, PHILOSOPHICAL_QUOTES, TRANSLATIONS } from './consta
 import { soundEngine } from './sound';
 import { gregorianToJalali, jalaliToGregorian, formatJalaliVerbose } from './jalali';
 
+import { lazy, Suspense } from 'react';
+
 // Import refactored smaller components
 import { Header } from './components/Header';
 import { CountdownBanner } from './components/CountdownBanner';
-import { ConfigForm } from './components/ConfigForm';
 import { Sidebar } from './components/Sidebar';
 import { GridVisualizer } from './components/GridVisualizer';
 import { JournalTab } from './components/JournalTab';
-import { NoteDrawer } from './components/NoteDrawer';
-import { ProfilesModal } from './components/ProfilesModal';
-import { SettingsModal } from './components/SettingsModal';
+
+const ConfigForm = lazy(() => import('./components/ConfigForm').then(m => ({ default: m.ConfigForm })));
+const NoteDrawer = lazy(() => import('./components/NoteDrawer').then(m => ({ default: m.NoteDrawer })));
+const ProfilesModal = lazy(() => import('./components/ProfilesModal').then(m => ({ default: m.ProfilesModal })));
+const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })));
 
 const DEFAULT_SETTINGS: Settings = {
   theme: 'zen',
@@ -64,7 +67,7 @@ function App() {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   // Default active tab is goals ('milestones') as requested
-  const [activeTab, setActiveTab] = useState<'journal' | 'milestones' | 'uncensored'>('milestones');
+  const [activeTab, setActiveTab] = useState<'journal' | 'milestones' | 'legacy'>('milestones');
   
   // Custom Milestone Form
   const [newMilestoneAge, setNewMilestoneAge] = useState<number>(30);
@@ -83,6 +86,10 @@ function App() {
   const [formExercise, setFormExercise] = useState(false);
   const [formDiet, setFormDiet] = useState(false);
   const [formStress, setFormStress] = useState(false);
+  const [formSleep, setFormSleep] = useState(false);
+  const [formAlcohol, setFormAlcohol] = useState(false);
+  const [formPollution, setFormPollution] = useState(false);
+  const [formGenetics, setFormGenetics] = useState(false);
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
 
   // Jalali Birthdate Selects (Persian Language mode)
@@ -100,6 +107,9 @@ function App() {
   
   // Current philosophical quote
   const [quoteIndex, setQuoteIndex] = useState(0);
+
+  // PWA deferred install prompt state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // Hover state for tooltip on grid
   const [hoveredUnitIndex, setHoveredUnitIndex] = useState<number | null>(null);
@@ -160,6 +170,26 @@ function App() {
     soundEngine.setAmbient(settings.ambientEnabled);
   }, [settings.ambientEnabled]);
 
+  // Listen to PWA install availability event
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install: ${outcome}`);
+    setDeferredPrompt(null);
+  };
+
+
+
   // Sync Jalali inputs with Gregorian formBirthDate
   useEffect(() => {
     if (settings.language === 'fa') {
@@ -195,7 +225,7 @@ function App() {
   const calculations = useMemo(() => {
     if (!activeProfile) return null;
 
-    const birthDate = new Date(activeProfile.birthDate + 'T' + (activeProfile.birthTime || '12:00'));
+    const birthDate = new Date(activeProfile.birthDate + 'T' + (activeProfile.birthTime || '12:00') + ':00Z');
     
     // Virtual expected lifespan adjusted by lifestyle
     let adjustedLifespan = activeProfile.expectedLifespan;
@@ -203,10 +233,14 @@ function App() {
     if (activeProfile.lifestyle.exercise) adjustedLifespan += 5;
     if (activeProfile.lifestyle.diet) adjustedLifespan += 4;
     if (activeProfile.lifestyle.stress) adjustedLifespan -= 3;
+    if (activeProfile.lifestyle.sleep) adjustedLifespan += 3;
+    if (activeProfile.lifestyle.alcohol) adjustedLifespan -= 5;
+    if (activeProfile.lifestyle.pollution) adjustedLifespan -= 2;
+    if (activeProfile.lifestyle.genetics) adjustedLifespan += 4;
     adjustedLifespan = Math.max(10, adjustedLifespan); // floor at 10 years
 
     const deathDate = new Date(birthDate);
-    deathDate.setFullYear(birthDate.getFullYear() + adjustedLifespan);
+    deathDate.setUTCFullYear(birthDate.getUTCFullYear() + adjustedLifespan);
 
     const lifeLivedMs = currentTime.getTime() - birthDate.getTime();
     const totalExpectedMs = deathDate.getTime() - birthDate.getTime();
@@ -214,21 +248,21 @@ function App() {
 
     const livedPercent = Math.min(100, Math.max(0, (lifeLivedMs / totalExpectedMs) * 100));
     
-    // Precise age
-    let years = currentTime.getFullYear() - birthDate.getFullYear();
-    let months = currentTime.getMonth() - birthDate.getMonth();
-    let days = currentTime.getDate() - birthDate.getDate();
-    let hours = currentTime.getHours() - birthDate.getHours();
-    let minutes = currentTime.getMinutes() - birthDate.getMinutes();
-    let seconds = currentTime.getSeconds() - birthDate.getSeconds();
+    // Precise age in UTC to prevent timezone offsets shifting values on travel
+    let years = currentTime.getUTCFullYear() - birthDate.getUTCFullYear();
+    let months = currentTime.getUTCMonth() - birthDate.getUTCMonth();
+    let days = currentTime.getUTCDate() - birthDate.getUTCDate();
+    let hours = currentTime.getUTCHours() - birthDate.getUTCHours();
+    let minutes = currentTime.getUTCMinutes() - birthDate.getUTCMinutes();
+    let seconds = currentTime.getUTCSeconds() - birthDate.getUTCSeconds();
 
     if (seconds < 0) { minutes--; seconds += 60; }
     if (minutes < 0) { hours--; minutes += 60; }
     if (hours < 0) { days--; hours += 24; }
     if (days < 0) {
       months--;
-      const prevMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0);
-      days += prevMonth.getDate();
+      const prevMonth = new Date(Date.UTC(currentTime.getUTCFullYear(), currentTime.getUTCMonth(), 0));
+      days += prevMonth.getUTCDate();
     }
     if (months < 0) {
       years--;
@@ -267,6 +301,39 @@ function App() {
     };
   }, [activeProfile, currentTime]);
 
+  // --- Check and trigger new week notification ---
+  useEffect(() => {
+    if (!settings.notificationsEnabled || !activeProfile || !calculations) return;
+    
+    // Only run in client environment when Notification is supported
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const currentWeekLived = Math.floor(calculations.stats.lived.weeks);
+    const lastNotifiedWeekStr = localStorage.getItem(`memento_notified_week_${activeProfile.id}`);
+    const lastNotifiedWeek = lastNotifiedWeekStr ? parseInt(lastNotifiedWeekStr, 10) : -1;
+
+    if (lastNotifiedWeekStr === null) {
+      // First initialization of this profile, mark current week as notified to avoid instant trigger
+      localStorage.setItem(`memento_notified_week_${activeProfile.id}`, currentWeekLived.toString());
+      return;
+    }
+
+    if (currentWeekLived > lastNotifiedWeek) {
+      const bodyText = t.notificationBody.replace('{livedPercent}', calculations.livedPercent.toFixed(2));
+      try {
+        new Notification(t.notificationTitle, {
+          body: bodyText,
+          icon: '/favicon.svg',
+          tag: 'memento-mori-new-week',
+          requireInteraction: false
+        });
+        localStorage.setItem(`memento_notified_week_${activeProfile.id}`, currentWeekLived.toString());
+      } catch (err) {
+        console.error("Failed to show browser notification: ", err);
+      }
+    }
+  }, [settings.notificationsEnabled, activeProfile, calculations, t]);
+
   // Grid units count based on view mode
   const gridData = useMemo(() => {
     if (!activeProfile || !calculations) return null;
@@ -296,6 +363,38 @@ function App() {
     const custom = customMilestones[activeProfileId] || [];
     return [...DEFAULT_MILESTONES, ...custom];
   }, [activeProfileId, customMilestones]);
+
+  const notesLookup = useMemo(() => {
+    const set = new Set<number>();
+    if (!activeProfileId) return set;
+    
+    const prefix = `${activeProfileId}-${viewMode}-`;
+    Object.keys(journal).forEach(key => {
+      if (key.startsWith(prefix)) {
+        const indexPart = key.substring(prefix.length);
+        const idx = parseInt(indexPart, 10);
+        if (!isNaN(idx)) {
+          set.add(idx);
+        }
+      }
+    });
+    return set;
+  }, [journal, activeProfileId, viewMode]);
+
+  const milestonesLookup = useMemo(() => {
+    const set = new Set<number>();
+    if (!calculations || !activeProfile) return set;
+
+    const multiplier = viewMode === 'weeks' ? 52 : viewMode === 'months' ? 12 : 1;
+    activeMilestones.forEach(m => {
+      if (m.isLegacy) return;
+      const idx = Math.floor(m.age * multiplier);
+      if (idx >= 0) {
+        set.add(idx);
+      }
+    });
+    return set;
+  }, [activeMilestones, viewMode, calculations, activeProfile]);
 
   // Fetch milestones that occur in a specific unit index
   const getUnitMilestones = (index: number) => {
@@ -342,6 +441,10 @@ function App() {
       setFormExercise(profile.lifestyle.exercise);
       setFormDiet(profile.lifestyle.diet);
       setFormStress(profile.lifestyle.stress);
+      setFormSleep(!!profile.lifestyle.sleep);
+      setFormAlcohol(!!profile.lifestyle.alcohol);
+      setFormPollution(!!profile.lifestyle.pollution);
+      setFormGenetics(!!profile.lifestyle.genetics);
       syncGregorianToJalali(profile.birthDate);
     } else {
       setEditingProfileId(null);
@@ -355,6 +458,10 @@ function App() {
       setFormExercise(false);
       setFormDiet(false);
       setFormStress(false);
+      setFormSleep(false);
+      setFormAlcohol(false);
+      setFormPollution(false);
+      setFormGenetics(false);
       setJalaliYear(1379);
       setJalaliMonth(1);
       setJalaliDay(1);
@@ -372,6 +479,10 @@ function App() {
       exercise: formExercise,
       diet: formDiet,
       stress: formStress,
+      sleep: formSleep,
+      alcohol: formAlcohol,
+      pollution: formPollution,
+      genetics: formGenetics,
     };
 
     if (editingProfileId) {
@@ -515,6 +626,31 @@ function App() {
       return {
         ...prev,
         [activeProfileId]: activeList.filter(m => m.id !== id)
+      };
+    });
+  };
+
+  const handleAddLegacyEvent = (yearsAfter: number, title: string, desc: string) => {
+    if (!activeProfileId) return;
+    const newMilestone: Milestone = {
+      id: Math.random().toString(36).substring(2, 9),
+      age: (calculations?.adjustedLifespan || 80) + yearsAfter,
+      titleEn: title,
+      titleFa: title,
+      descriptionEn: desc,
+      descriptionFa: desc,
+      icon: '🌌',
+      category: 'general',
+      isCustom: true,
+      isLegacy: true,
+      yearsAfter: yearsAfter
+    };
+
+    setCustomMilestones(prev => {
+      const activeList = prev[activeProfileId] || [];
+      return {
+        ...prev,
+        [activeProfileId]: [...activeList, newMilestone]
       };
     });
   };
@@ -663,9 +799,13 @@ function App() {
         onOpenProfilePicker={() => setIsProfileModalOpen(true)}
         onEditProfile={() => handleOpenConfig(activeProfile)}
         onGoHome={() => {
-          setIsConfiguring(false);
-          setSelectedUnitIndex(null);
+          if (activeProfile) {
+            setIsConfiguring(false);
+            setSelectedUnitIndex(null);
+          }
         }}
+        showInstallBtn={!!deferredPrompt}
+        onInstall={handleInstallClick}
         isLeftSidebarOpen={isLeftSidebarOpen}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(prev => !prev)}
         isRightSidebarOpen={isRightSidebarOpen}
@@ -685,40 +825,50 @@ function App() {
 
       {/* 1. SETUP / CONFIGURATION SCREEN */}
       {isConfiguring ? (
-        <ConfigForm 
-          editingProfileId={editingProfileId}
-          profiles={profiles}
-          language={settings.language}
-          formName={formName}
-          setFormName={setFormName}
-          formBirthDate={formBirthDate}
-          setFormBirthDate={setFormBirthDate}
-          formBirthTime={formBirthTime}
-          setFormBirthTime={setFormBirthTime}
-          formExpectedLifespan={formExpectedLifespan}
-          setFormExpectedLifespan={setFormExpectedLifespan}
-          formGender={formGender}
-          setFormGender={setFormGender}
-          formCountry={formCountry}
-          setFormCountry={setFormCountry}
-          formSmoking={formSmoking}
-          setFormSmoking={setFormSmoking}
-          formExercise={formExercise}
-          setFormExercise={setFormExercise}
-          formDiet={formDiet}
-          setFormDiet={setFormDiet}
-          formStress={formStress}
-          setFormStress={setFormStress}
-          jalaliYear={jalaliYear}
-          setJalaliYear={setJalaliYear}
-          jalaliMonth={jalaliMonth}
-          setJalaliMonth={setJalaliMonth}
-          jalaliDay={jalaliDay}
-          setJalaliDay={setJalaliDay}
-          onSaveProfile={handleSaveProfile}
-          onCancel={() => setIsConfiguring(false)}
-          t={t}
-        />
+        <Suspense fallback={<div className="splash-container"><div className="splash-spinner"></div></div>}>
+          <ConfigForm 
+            editingProfileId={editingProfileId}
+            profiles={profiles}
+            language={settings.language}
+            formName={formName}
+            setFormName={setFormName}
+            formBirthDate={formBirthDate}
+            setFormBirthDate={setFormBirthDate}
+            formBirthTime={formBirthTime}
+            setFormBirthTime={setFormBirthTime}
+            formExpectedLifespan={formExpectedLifespan}
+            setFormExpectedLifespan={setFormExpectedLifespan}
+            formGender={formGender}
+            setFormGender={setFormGender}
+            formCountry={formCountry}
+            setFormCountry={setFormCountry}
+            formSmoking={formSmoking}
+            setFormSmoking={setFormSmoking}
+            formExercise={formExercise}
+            setFormExercise={setFormExercise}
+            formDiet={formDiet}
+            setFormDiet={setFormDiet}
+            formStress={formStress}
+            setFormStress={setFormStress}
+            formSleep={formSleep}
+            setFormSleep={setFormSleep}
+            formAlcohol={formAlcohol}
+            setFormAlcohol={setFormAlcohol}
+            formPollution={formPollution}
+            setFormPollution={setFormPollution}
+            formGenetics={formGenetics}
+            setFormGenetics={setFormGenetics}
+            jalaliYear={jalaliYear}
+            setJalaliYear={setJalaliYear}
+            jalaliMonth={jalaliMonth}
+            setJalaliMonth={setJalaliMonth}
+            jalaliDay={jalaliDay}
+            setJalaliDay={setJalaliDay}
+            onSaveProfile={handleSaveProfile}
+            onCancel={() => setIsConfiguring(false)}
+            t={t}
+          />
+        </Suspense>
       ) : activeProfile && calculations && gridData ? (
         // 2. NO-SCROLL DASHBOARD MAIN INTERFACE
         <div className={`dashboard-layout ${isLeftSidebarOpen ? 'left-open' : 'left-collapsed'} ${isRightSidebarOpen ? 'right-open' : 'right-collapsed'} show-col-${activeColumn}`}>
@@ -746,9 +896,8 @@ function App() {
               zoomLevel={zoomLevel}
               setZoomLevel={setZoomLevel}
               gridData={gridData}
-              journal={journal}
-              getUnitNoteKey={getUnitNoteKey}
-              getUnitMilestones={getUnitMilestones}
+              notesLookup={notesLookup}
+              milestonesLookup={milestonesLookup}
               handleUnitClick={handleUnitClick}
               handleUnitMouseEnter={handleUnitMouseEnter}
               setHoveredUnitIndex={setHoveredUnitIndex}
@@ -814,6 +963,7 @@ function App() {
                   setNewMilestoneCat={setNewMilestoneCat}
                   onAddMilestone={handleAddCustomMilestone}
                   onDeleteMilestone={handleDeleteCustomMilestone}
+                  onAddLegacyEvent={handleAddLegacyEvent}
                   setViewMode={setViewMode}
                   onOpenNoteDrawer={handleUnitClick}
                   language={settings.language}
@@ -827,52 +977,54 @@ function App() {
 
       {/* --- DRAWERS AND DIALOGS --- */}
 
-      {/* Note Editing Drawer */}
-      {selectedUnitIndex !== null && calculations && activeProfile && (
-        <NoteDrawer 
-          selectedUnitIndex={selectedUnitIndex}
-          viewMode={viewMode}
-          noteTitle={noteTitle}
-          setNoteTitle={setNoteTitle}
-          noteContent={noteContent}
-          setNoteContent={setNoteContent}
-          noteCat={noteCat}
-          setNoteCat={setNoteCat}
-          onSaveNote={handleSaveNote}
-          onDeleteNote={handleDeleteNote}
-          onClose={() => setSelectedUnitIndex(null)}
-          getUnitDateRange={getUnitDateRange}
-          getUnitMilestones={getUnitMilestones}
-          journal={journal}
-          getUnitNoteKey={getUnitNoteKey}
-          settings={settings}
-          t={t}
-        />
-      )}
+      <Suspense fallback={null}>
+        {/* Note Editing Drawer */}
+        {selectedUnitIndex !== null && calculations && activeProfile && (
+          <NoteDrawer 
+            selectedUnitIndex={selectedUnitIndex}
+            viewMode={viewMode}
+            noteTitle={noteTitle}
+            setNoteTitle={setNoteTitle}
+            noteContent={noteContent}
+            setNoteContent={setNoteContent}
+            noteCat={noteCat}
+            setNoteCat={setNoteCat}
+            onSaveNote={handleSaveNote}
+            onDeleteNote={handleDeleteNote}
+            onClose={() => setSelectedUnitIndex(null)}
+            getUnitDateRange={getUnitDateRange}
+            getUnitMilestones={getUnitMilestones}
+            journal={journal}
+            getUnitNoteKey={getUnitNoteKey}
+            settings={settings}
+            t={t}
+          />
+        )}
 
-      {/* Profiles Modal */}
-      {isProfileModalOpen && (
-        <ProfilesModal 
-          profiles={profiles}
-          activeProfileId={activeProfileId}
-          onSelectProfile={setActiveProfileId}
-          onEditProfile={handleOpenConfig}
-          onDeleteProfile={handleDeleteProfile}
-          onAddProfile={() => handleOpenConfig()}
-          onClose={() => setIsProfileModalOpen(false)}
-          t={t}
-        />
-      )}
+        {/* Profiles Modal */}
+        {isProfileModalOpen && (
+          <ProfilesModal 
+            profiles={profiles}
+            activeProfileId={activeProfileId}
+            onSelectProfile={setActiveProfileId}
+            onEditProfile={handleOpenConfig}
+            onDeleteProfile={handleDeleteProfile}
+            onAddProfile={() => handleOpenConfig()}
+            onClose={() => setIsProfileModalOpen(false)}
+            t={t}
+          />
+        )}
 
-      {/* Global Settings Drawer */}
-      {isSettingsOpen && (
-        <SettingsModal 
-          settings={settings}
-          setSettings={setSettings}
-          onClose={() => setIsSettingsOpen(false)}
-          t={t}
-        />
-      )}
+        {/* Global Settings Drawer */}
+        {isSettingsOpen && (
+          <SettingsModal 
+            settings={settings}
+            setSettings={setSettings}
+            onClose={() => setIsSettingsOpen(false)}
+            t={t}
+          />
+        )}
+      </Suspense>
 
       {/* Grid Hover Tooltip */}
       {hoveredUnitIndex !== null && calculations && (

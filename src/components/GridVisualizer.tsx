@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Share2 } from 'lucide-react';
-import type { ViewMode, Settings, JournalEntry, Milestone } from '../types';
+import type { ViewMode, Settings } from '../types';
 import { soundEngine } from '../sound';
 
 interface GridVisualizerProps {
@@ -9,9 +9,8 @@ interface GridVisualizerProps {
   zoomLevel: number;
   setZoomLevel: (z: number | ((prev: number) => number)) => void;
   gridData: { totalUnits: number; currentUnitIndex: number };
-  journal: Record<string, JournalEntry>;
-  getUnitNoteKey: (index: number) => string;
-  getUnitMilestones: (index: number) => Milestone[];
+  notesLookup: Set<number>;
+  milestonesLookup: Set<number>;
   handleUnitClick: (index: number) => void;
   handleUnitMouseEnter: (e: React.MouseEvent, index: number) => void;
   setHoveredUnitIndex: (index: number | null) => void;
@@ -26,9 +25,8 @@ export function GridVisualizer({
   zoomLevel,
   setZoomLevel,
   gridData,
-  journal,
-  getUnitNoteKey,
-  getUnitMilestones,
+  notesLookup,
+  milestonesLookup,
   handleUnitClick,
   handleUnitMouseEnter,
   setHoveredUnitIndex,
@@ -181,9 +179,8 @@ export function GridVisualizer({
             {Array.from({ length: gridData.totalUnits }).map((_, index) => {
               const isLived = index < gridData.currentUnitIndex;
               const isCurrent = index === gridData.currentUnitIndex;
-              const hasNote = !!journal[getUnitNoteKey(index)];
-              const milestones = getUnitMilestones(index);
-              const hasMilestone = milestones.length > 0;
+              const hasNote = notesLookup.has(index);
+              const hasMilestone = milestonesLookup.has(index);
 
               let className = 'grid-unit';
               if (isLived) className += ' lived';

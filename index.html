@@ -2,8 +2,7 @@
 <html lang="fa" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Primary Meta Tags -->
@@ -19,14 +18,14 @@
     <meta property="og:url" content="https://memento.life/" />
     <meta property="og:title" content="Memento Mori - زندگی‌شمار و شبیه‌ساز طول عمر فلسفی" />
     <meta property="og:description" content="یادآور مرگ و شمارشگر معکوس زندگی بر اساس سن، جنسیت، کشور و شیوه زندگی. زمان خود را مدیریت کنید و قدر لحظات خود را بدانید." />
-    <meta property="og:image" content="https://memento.life/og-image.jpg" />
+    <meta property="og:image" content="https://memento.life/logo.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://memento.life/" />
     <meta property="twitter:title" content="Memento Mori - زندگی‌شمار و شبیه‌ساز طول عمر فلسفی" />
     <meta property="twitter:description" content="یادآور مرگ و شمارشگر معکوس زندگی بر اساس سن، جنسیت، کشور و شیوه زندگی. زمان خود را مدیریت کنید و قدر لحظات خود را بدانید." />
-    <meta property="twitter:image" content="https://memento.life/og-image.jpg" />
+    <meta property="twitter:image" content="https://memento.life/logo.png" />
 
     <!-- Structured Data (JSON-LD) for SEO -->
     <script type="application/ld+json">
@@ -36,6 +35,7 @@
         "name": "Memento Mori Life Visualizer",
         "alternateName": "زندگی‌شمار ممینتو موری",
         "url": "https://memento.life",
+        "image": "https://memento.life/logo.png",
         "description": "A beautiful, customizable, and philosophical life visualizer and countdown based on WHO mortality data.",
         "applicationCategory": "HealthApplication",
         "operatingSystem": "All",
@@ -48,7 +48,86 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="splash-container">
+        <div class="splash-content">
+          <img src="/logo.png" alt="Memento Mori" class="splash-logo" />
+          <h1 class="splash-title">MEMENTO MORI</h1>
+          <div class="splash-spinner"></div>
+          <p class="splash-text">Life is short, make it count...</p>
+        </div>
+      </div>
+      <style>
+        .splash-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #f5f6f2;
+          color: #212c1f;
+          font-family: system-ui, -apple-system, sans-serif;
+          z-index: 9999;
+        }
+        @media (prefers-color-scheme: dark) {
+          .splash-container {
+            background-color: #0b0d17;
+            color: #f1f5f9;
+          }
+        }
+        .splash-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          text-align: center;
+        }
+        .splash-logo {
+          width: 90px;
+          height: 90px;
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+          animation: pulse 2.5s infinite ease-in-out;
+        }
+        .splash-title {
+          font-size: 1.4rem;
+          font-weight: 600;
+          letter-spacing: 0.15em;
+          margin: 0;
+          opacity: 0.9;
+        }
+        .splash-spinner {
+          width: 24px;
+          height: 24px;
+          border: 2px solid rgba(0, 0, 0, 0.1);
+          border-top-color: currentColor;
+          border-radius: 50%;
+          animation: spin 1s infinite linear;
+        }
+        @media (prefers-color-scheme: dark) {
+          .splash-spinner {
+            border-color: rgba(255, 255, 255, 0.1);
+            border-top-color: currentColor;
+          }
+        }
+        .splash-text {
+          font-size: 0.85rem;
+          font-style: italic;
+          opacity: 0.75;
+          margin: 0;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(0.93); opacity: 0.8; }
+        }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

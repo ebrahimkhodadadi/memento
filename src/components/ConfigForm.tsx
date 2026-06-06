@@ -26,6 +26,14 @@ interface ConfigFormProps {
   setFormDiet: (val: boolean) => void;
   formStress: boolean;
   setFormStress: (val: boolean) => void;
+  formSleep: boolean;
+  setFormSleep: (val: boolean) => void;
+  formAlcohol: boolean;
+  setFormAlcohol: (val: boolean) => void;
+  formPollution: boolean;
+  setFormPollution: (val: boolean) => void;
+  formGenetics: boolean;
+  setFormGenetics: (val: boolean) => void;
   jalaliYear: number;
   setJalaliYear: (val: number) => void;
   jalaliMonth: number;
@@ -61,6 +69,14 @@ export function ConfigForm({
   setFormDiet,
   formStress,
   setFormStress,
+  formSleep,
+  setFormSleep,
+  formAlcohol,
+  setFormAlcohol,
+  formPollution,
+  setFormPollution,
+  formGenetics,
+  setFormGenetics,
   jalaliYear,
   setJalaliYear,
   jalaliMonth,
@@ -75,9 +91,16 @@ export function ConfigForm({
 
   return (
     <main className="config-container glass-panel">
-      <h2 className="config-title">
-        {editingProfileId ? t.editProfile : t.enterBirthDetails}
-      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px', gap: '10px' }}>
+        <img 
+          src="/logo.png" 
+          alt="Memento Logo" 
+          style={{ width: '90px', height: '90px', borderRadius: '20px', objectFit: 'cover', border: '1px solid var(--border)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.08)' }} 
+        />
+        <h2 className="config-title" style={{ margin: 0 }}>
+          {editingProfileId ? t.editProfile : t.enterBirthDetails}
+        </h2>
+      </div>
       
       <form onSubmit={onSaveProfile} className="drawer-body">
         <div className="form-group">
@@ -232,6 +255,38 @@ export function ConfigForm({
             >
               <input type="checkbox" checked={formStress} readOnly />
               <span>{t.stress}</span>
+            </div>
+
+            <div 
+              className={`lifestyle-card ${formSleep ? 'active' : ''}`}
+              onClick={() => setFormSleep(!formSleep)}
+            >
+              <input type="checkbox" checked={formSleep} readOnly />
+              <span>{t.sleep}</span>
+            </div>
+
+            <div 
+              className={`lifestyle-card ${formAlcohol ? 'active' : ''}`}
+              onClick={() => setFormAlcohol(!formAlcohol)}
+            >
+              <input type="checkbox" checked={formAlcohol} readOnly />
+              <span>{t.alcohol}</span>
+            </div>
+
+            <div 
+              className={`lifestyle-card ${formPollution ? 'active' : ''}`}
+              onClick={() => setFormPollution(!formPollution)}
+            >
+              <input type="checkbox" checked={formPollution} readOnly />
+              <span>{t.pollution}</span>
+            </div>
+
+            <div 
+              className={`lifestyle-card ${formGenetics ? 'active' : ''}`}
+              onClick={() => setFormGenetics(!formGenetics)}
+            >
+              <input type="checkbox" checked={formGenetics} readOnly />
+              <span>{t.genetics}</span>
             </div>
           </div>
         </div>

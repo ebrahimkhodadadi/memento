@@ -1,4 +1,4 @@
-import { Globe, Sun, Moon, Volume2, VolumeX, Music, Settings, User, Edit2, BookOpen, PanelLeft } from 'lucide-react';
+import { Globe, Sun, Moon, Volume2, VolumeX, Music, Settings, User, Edit2, BookOpen, PanelLeft, Download } from 'lucide-react';
 import type { Settings as SettingsType, Profile } from '../types';
 
 interface HeaderProps {
@@ -12,6 +12,8 @@ interface HeaderProps {
   onOpenProfilePicker: () => void;
   onEditProfile: () => void;
   onGoHome: () => void;
+  onInstall?: () => void;
+  showInstallBtn?: boolean;
   isLeftSidebarOpen?: boolean;
   onToggleLeftSidebar?: () => void;
   isRightSidebarOpen?: boolean;
@@ -30,6 +32,8 @@ export function Header({
   onOpenProfilePicker,
   onEditProfile,
   onGoHome,
+  onInstall,
+  showInstallBtn,
   isLeftSidebarOpen,
   onToggleLeftSidebar,
   isRightSidebarOpen,
@@ -38,7 +42,11 @@ export function Header({
 }: HeaderProps) {
   return (
     <header className="app-header glass-panel">
-      <div className="brand-section" onClick={onGoHome} style={{ cursor: 'pointer' }}>
+      <div 
+        className="brand-section" 
+        onClick={activeProfile ? onGoHome : undefined} 
+        style={{ cursor: activeProfile ? 'pointer' : 'default' }}
+      >
         <h1 className="brand-title">{t.title}</h1>
         <p className="brand-subtitle">{t.subtitle}</p>
       </div>
@@ -80,6 +88,19 @@ export function Header({
         >
           <Music size={18} />
         </button>
+
+        {/* Install App PWA Trigger */}
+        {showInstallBtn && onInstall && (
+          <button 
+            className="btn btn-primary" 
+            onClick={onInstall}
+            title={t.installApp}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Download size={18} />
+            <span>{t.installApp}</span>
+          </button>
+        )}
 
         {/* Settings Trigger */}
         <button 

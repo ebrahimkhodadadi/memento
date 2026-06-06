@@ -5,6 +5,10 @@ export interface Lifestyle {
   exercise: boolean;
   diet: boolean;
   stress: boolean;
+  sleep?: boolean;
+  alcohol?: boolean;
+  pollution?: boolean;
+  genetics?: boolean;
 }
 
 export interface Profile {
@@ -38,6 +42,8 @@ export interface Milestone {
   icon: string;
   category: string;
   isCustom?: boolean;
+  isLegacy?: boolean;
+  yearsAfter?: number;
 }
 
 export type ThemeName = 'zen' | 'cosmic' | 'vintage' | 'minimal' | 'aura';
@@ -51,5 +57,6 @@ export interface Settings {
   ambientEnabled: boolean;
   uncensoredMode: boolean;
   darkMode: boolean;
+  notificationsEnabled?: boolean;
 }
 

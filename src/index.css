@@ -318,6 +318,8 @@ body.dark .glass-panel:hover {
   flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 10px;
+  position: relative;
+  z-index: 50;
 }
 
 .brand-section {
@@ -352,6 +354,69 @@ body.dark .glass-panel:hover {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
+  transition: min-height 0.08s ease;
+}
+
+/* Resize handle at the bottom edge */
+.countdown-banner-resize-handle {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  cursor: ns-resize;
+  opacity: 0;
+  transition: opacity 0.2s ease, width 0.2s ease, background 0.15s ease;
+  z-index: 5;
+}
+
+.countdown-banner:hover .countdown-banner-resize-handle,
+.countdown-banner-resize-handle.active {
+  opacity: 1;
+}
+
+.countdown-banner-resize-handle:hover,
+.countdown-banner-resize-handle.active {
+  width: 72px;
+  background: var(--accent);
+}
+
+.countdown-banner-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -16px;
+  right: -16px;
+  bottom: -8px;
+}
+
+/* Reset button inside the banner */
+.countdown-banner-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.countdown-banner-reset-btn:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+  opacity: 1;
 }
 
 .countdown-banner-label {
@@ -402,11 +467,11 @@ body.rtl .countdown-banner-digits {
 }
 
 .dashboard-layout.left-open.right-open {
-  grid-template-columns: 340px 1fr 380px;
+  grid-template-columns: 380px 1fr 380px;
 }
 
 .dashboard-layout.left-open.right-collapsed {
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 380px 1fr;
 }
 
 .dashboard-layout.left-collapsed.right-open {
@@ -498,6 +563,11 @@ body.rtl .sidebar-panel {
   padding-left: 2px;
 }
 
+/* Prevent sidebar children from shrinking, allowing overflow-y:auto to work */
+.sidebar-panel > * {
+  flex-shrink: 0;
+}
+
 .main-panel {
   height: 100%;
   overflow-y: hidden;
@@ -510,9 +580,11 @@ body.rtl .sidebar-panel {
 /* Configuration Screen */
 .config-container {
   max-width: 650px;
-  margin: 20px auto;
-  max-height: calc(100vh - 100px);
+  margin: 20px auto 0;
+  max-height: calc(100vh - 56px - 12px - 24px - 20px - 20px);
+  /* 56px header + 12px gap + 24px app-container padding + 20px top margin + 20px visual bottom room */
   overflow-y: auto;
+  position: relative;
 }
 
 .config-title {
@@ -997,6 +1069,77 @@ body.dark .mortality-section {
   margin-top: 4px;
 }
 
+/* Collapsible Sidebar Sections */
+.sidebar-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+  margin: -4px 0;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-section-header:hover .sidebar-collapse-btn {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.sidebar-collapse-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-section-header:hover .sidebar-collapse-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sidebar-collapse-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.sidebar-section-content {
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease, padding 0.3s ease;
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.sidebar-section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.sidebar-section-header h3,
+.sidebar-section-header .mortality-title {
+  pointer-events: none;
+}
+
 /* Philosophical quote panel */
 .quote-panel {
   text-align: center;
@@ -1232,20 +1375,259 @@ body.rtl .journal-item {
   color: var(--text);
 }
 
+/* Sound Button Volume Slider Popup - CSS hover to avoid gap flicker */
+.sound-btn-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sound-volume-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  z-index: 60;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+}
+
+/* Hover bridge: invisible extension upward to eliminate the gap flicker */
+.sound-volume-popup::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: -12px;
+  right: -12px;
+  height: 12px;
+}
+
+.sound-btn-wrapper:hover .sound-volume-popup {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.vol-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-h);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  line-height: 1;
+  user-select: none;
+}
+
+.vol-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.vol-slider-container {
+  display: flex;
+  align-items: center;
+  width: 80px;
+}
+
+.vol-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 4px;
+  outline: none;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.vol-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.vol-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.vol-percent {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* RTL adjustment: keep popup LTR for the slider */
+body.rtl .sound-volume-popup {
+  direction: ltr;
+}
+
 /* Hide mobile bottom navigation bar on desktop by default */
 .mobile-bottom-nav {
   display: none;
 }
 
+/* --- Hamburger Mobile Menu Styles --- */
+.mobile-hamburger-btn {
+  display: none;
+}
+
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 200;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.mobile-menu-dropdown {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: min(320px, 85vw);
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  box-shadow: 8px 0 25px rgba(0, 0, 0, 0.15);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px;
+  overflow-y: auto;
+  animation: slideInLeft 0.2s ease-out;
+}
+
+body.rtl .mobile-menu-dropdown {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 25px rgba(0, 0, 0, 0.15);
+  animation-name: slideInRight;
+}
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-menu-title {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: right;
+}
+
+.mobile-menu-item:hover {
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.mobile-menu-item.active {
+  color: var(--accent);
+}
+
+.mobile-menu-item svg {
+  flex-shrink: 0;
+}
+
+.mobile-menu-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+body.rtl .mobile-menu-item {
+  text-align: right;
+}
+
 /* --- Mobile Responsive Enhancements (max-width: 768px) --- */
 @media (max-width: 768px) {
-  /* Prevent full-screen lock scroll issue on mobile by adjusting container & layout */
+  /* Mobile: fixed viewport height so overflow-y:auto actually works */
   .app-container {
-    padding: 8px;
-    height: auto;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-y: auto; /* Allow scrolling on mobile */
+    padding: 8px 8px 0;
+    height: 100dvh;
+    overflow-y: auto;
     padding-bottom: 80px; /* Space for the bottom navigation bar */
   }
 
@@ -1259,21 +1641,24 @@ body.rtl .journal-item {
   }
 
   .brand-section {
-    justify-content: center;
-    text-align: center;
+    justify-content: flex-start;
+    text-align: left;
     width: 100%;
+    align-items: center;
   }
 
-  .header-controls {
-    justify-content: center;
-    flex-wrap: wrap; /* Allow wrapping of buttons so they don't break layout */
-    width: 100%;
-    gap: 6px;
+  body.rtl .brand-section {
+    justify-content: flex-start;
+    text-align: right;
   }
 
-  .header-controls .btn {
-    padding: 6px 10px;
-    font-size: 0.8rem;
+  /* Desktop controls hidden on mobile, hamburger shows instead */
+  .desktop-controls {
+    display: none !important;
+  }
+
+  .mobile-hamburger-btn {
+    display: flex !important;
   }
 
   /* Countdown Banner adjustments */
@@ -1324,14 +1709,41 @@ body.rtl .journal-item {
     gap: 6px !important;
   }
 
-  /* Dashboard Layout & Tabbed Navigation */
-  .dashboard-layout.with-right-sidebar,
-  .dashboard-layout.without-right-sidebar {
+  /* Dashboard Layout on mobile: let app-container handle scrolling, don't flex-grow */
+  .dashboard-layout {
     grid-template-columns: 1fr !important;
     height: auto !important;
-    min-height: 400px;
-    overflow: visible;
-    margin-bottom: 20px;
+    overflow: visible !important;
+    flex-grow: 0 !important;
+  }
+
+  /* Fix scrolling: remove all overflow constraints on mobile, let app-container scroll */
+  .sidebar-column-wrapper,
+  .right-sidebar-panel,
+  .main-panel {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Sidebar panel should not scroll on mobile */
+  .sidebar-panel {
+    height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Right sidebar glass-panel: override inline overflowY:hidden on mobile */
+  .right-sidebar-panel > .glass-panel {
+    height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Journal inner content: remove flex-grow scroll on mobile */
+  .right-sidebar-panel > .glass-panel > div:last-child {
+    overflow: visible !important;
+    flex-grow: 0 !important;
+    height: auto !important;
   }
 
   /* Hide columns unless they match the active column class */
@@ -1346,8 +1758,16 @@ body.rtl .journal-item {
     display: flex !important;
   }
 
+  .dashboard-layout.show-col-grid {
+    flex-grow: 1 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+  }
+
   .dashboard-layout.show-col-grid .main-panel {
     display: flex !important;
+    height: 100% !important;
+    min-height: 0 !important;
   }
 
   .dashboard-layout.show-col-journal .right-sidebar-panel {
@@ -1412,16 +1832,61 @@ body.rtl .journal-item {
   }
 
   /* Form and Dialog styling for mobile */
-  .form-row, .lifestyle-grid, .jalali-select-row {
+  .form-row, .jalali-select-row {
     grid-template-columns: 1fr !important;
     gap: 8px !important;
   }
 
+  /* Compact lifestyle grid: 3 columns on mobile */
+  .lifestyle-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .lifestyle-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 8px 6px;
+    gap: 4px;
+    font-size: 0.75rem;
+  }
+
+  .lifestyle-card input[type="checkbox"] {
+    margin: 0;
+  }
+
   .config-container {
-    margin: 10px auto;
-    padding: 12px;
+    margin: 0 auto;
+    padding: 16px 12px;
     max-height: none;
     width: 100% !important;
+    overflow-y: visible;
+    flex-shrink: 0;
+  }
+
+  .config-container form {
+    gap: 8px;
+  }
+
+  .config-container .form-group {
+    margin-bottom: 6px;
+  }
+
+  .config-title {
+    font-size: 1.2rem;
+  }
+
+  .config-container img {
+    width: 65px !important;
+    height: 65px !important;
+  }
+
+  .config-container p {
+    font-size: 0.7rem !important;
+  }
+
+  .drawer-content {
+    width: 100%;
   }
 
   .stats-panel-grid {
@@ -1463,10 +1928,26 @@ body.dark .countdown-fullscreen-overlay::before {
   background: radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.35) 100%);
 }
 
-.countdown-fullscreen-close {
+.fullscreen-top-actions {
   position: absolute;
   top: 24px;
+  left: 24px;
   right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 10;
+}
+
+.fullscreen-actions-group,
+.fullscreen-close-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fullscreen-action-btn,
+.fullscreen-close-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -1478,18 +1959,70 @@ body.dark .countdown-fullscreen-overlay::before {
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--card-shadow);
-  transition: var(--transition);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
-body.rtl .countdown-fullscreen-close {
-  right: auto;
-  left: 24px;
-}
-
-.countdown-fullscreen-close:hover {
+.fullscreen-close-btn:hover {
   transform: rotate(90deg) scale(1.1);
   background: var(--border);
   color: var(--text-h);
+}
+
+/* Action buttons hidden by default, slide in on hover */
+.fullscreen-actions-group .fullscreen-action-btn {
+  max-width: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  transform: scale(0.5);
+  pointer-events: none;
+  overflow: hidden;
+  border-color: transparent;
+}
+
+.fullscreen-top-actions:hover .fullscreen-actions-group .fullscreen-action-btn {
+  max-width: 44px;
+  padding: 0;
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  border-color: var(--border);
+}
+
+/* Stagger animation for a sequential reveal */
+.fullscreen-top-actions:hover .fullscreen-actions-group .fullscreen-action-btn:first-child {
+  transition-delay: 0s;
+}
+
+.fullscreen-top-actions:hover .fullscreen-actions-group .fullscreen-action-btn:nth-child(2) {
+  transition-delay: 0.04s;
+}
+
+.fullscreen-action-btn.active {
+  color: var(--accent);
+}
+
+.fullscreen-action-btn:not(.active) {
+  opacity: 0.6;
+  color: var(--text);
+}
+
+.fullscreen-action-btn:not(.active):hover {
+  opacity: 1;
+  color: var(--text-h);
+  border-color: var(--border);
+  background: var(--card-bg);
+}
+
+.fullscreen-action-btn:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--text-h);
+}
+
+.fullscreen-action-btn.active:hover {
+  color: var(--accent-hover);
 }
 
 .countdown-fullscreen-content {
@@ -1571,6 +2104,168 @@ body.rtl .countdown-fullscreen-title {
   100% { text-shadow: 0 0 25px var(--glow-color), 0 0 5px var(--accent); }
 }
 
+/* Countdown Fullscreen Note Section */
+.countdown-note-section {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 8px;
+  z-index: 10;
+}
+
+.countdown-note-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  opacity: 0.5;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.countdown-note-add-btn:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-style: solid;
+}
+
+.countdown-note-display {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  text-align: center;
+  transition: var(--transition);
+}
+
+.countdown-note-display:hover {
+  border-color: var(--accent);
+}
+
+.countdown-note-text {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-h);
+  font-style: italic;
+  margin: 0;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.countdown-note-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.countdown-note-display:hover .countdown-note-actions {
+  opacity: 1;
+}
+
+body.rtl .countdown-note-actions {
+  right: auto;
+  left: 8px;
+}
+
+.countdown-note-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.countdown-note-btn:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.countdown-note-btn.save-btn {
+  width: auto;
+  padding: 0 12px;
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.countdown-note-btn.save-btn:hover {
+  background: var(--accent-hover);
+}
+
+.countdown-note-btn.cancel-btn:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.countdown-note-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.countdown-note-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text-h);
+  font-family: var(--font-title);
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.countdown-note-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+.countdown-note-textarea::placeholder {
+  color: var(--text);
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.countdown-note-editor-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .countdown-fullscreen-block {
     min-width: 90px;
@@ -1591,6 +2286,21 @@ body.rtl .countdown-fullscreen-title {
   }
   .countdown-fullscreen-percent {
     font-size: 1.2rem;
+  }
+
+  .countdown-note-section {
+    max-width: 100%;
+    padding: 0 8px;
+  }
+
+  .countdown-note-text {
+    font-size: 0.95rem;
+  }
+
+  .countdown-note-add-btn {
+    width: 100%;
+    padding: 8px 16px;
+    font-size: 0.8rem;
   }
 }
 
@@ -1639,4 +2349,29 @@ body.rtl .floating-left-sidebar-toggle {
   }
 }
 
+/* --- Extra small devices (max-width: 480px) --- */
+@media (max-width: 480px) {
+  .brand-title {
+    font-size: 1rem;
+  }
 
+  .config-container {
+    padding: 10px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .lifestyle-card {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+
+  .config-container img {
+    width: 70px !important;
+    height: 70px !important;
+  }
+}

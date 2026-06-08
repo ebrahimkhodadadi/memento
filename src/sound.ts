@@ -101,7 +101,7 @@ class SoundEngine {
       if (this.ctx && this.ctx.state === 'suspended') {
         this.ctx.resume();
       }
-      this.tickGain?.gain.setTargetAtTime(0.4, this.ctx!.currentTime, 0.1);
+      this.tickGain?.gain.setTargetAtTime(this._currentVol * 0.8, this.ctx!.currentTime, 0.1);
     } else {
       this.tickGain?.gain.setTargetAtTime(0, this.ctx?.currentTime || 0, 0.1);
       if (!this.isAmbientEnabled) {
@@ -114,6 +114,22 @@ class SoundEngine {
     }
   }
 
+  private _currentVol = 0.5;
+
+  setSoundVolume(vol: number) {
+    this._currentVol = Math.max(0, Math.min(1, vol));
+    if (this.ctx && this.isTickingEnabled) {
+      this.tickGain?.gain.setTargetAtTime(this._currentVol * 0.8, this.ctx.currentTime, 0.05);
+    }
+    if (this.ctx && this.isAmbientEnabled) {
+      this.padGain?.gain.setTargetAtTime(this._currentVol * 0.2, this.ctx.currentTime, 0.05);
+    }
+  }
+
+  getSoundVolume(): number {
+    return this._currentVol;
+  }
+
   setAmbient(enabled: boolean) {
     this.isAmbientEnabled = enabled;
     if (enabled) {
@@ -121,7 +137,7 @@ class SoundEngine {
       if (this.ctx && this.ctx.state === 'suspended') {
         this.ctx.resume();
       }
-      this.padGain?.gain.setTargetAtTime(0.2, this.ctx!.currentTime, 1.5);
+      this.padGain?.gain.setTargetAtTime(this._currentVol * 0.2, this.ctx!.currentTime, 1.5);
       this.startAmbientLoop();
     } else {
       this.padGain?.gain.setTargetAtTime(0, this.ctx?.currentTime || 0, 1.0);

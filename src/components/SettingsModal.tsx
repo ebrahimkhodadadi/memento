@@ -88,6 +88,18 @@ export function SettingsModal({
           </div>
 
           <div className="form-group">
+            <label>{t.countdownNote}</label>
+            <div 
+              className={`lifestyle-card ${settings.showCountdownNote !== false ? 'active' : ''}`}
+              onClick={() => setSettings(prev => ({ ...prev, showCountdownNote: prev.showCountdownNote === false ? true : false }))}
+            >
+              <input type="checkbox" checked={settings.showCountdownNote !== false} readOnly />
+              <span>{t.countdownNote}</span>
+            </div>
+            <p style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '4px' }}>{t.countdownNoteDesc}</p>
+          </div>
+
+          <div className="form-group">
             <label>{t.webNotifications}</label>
             <div 
               className={`lifestyle-card ${settings.notificationsEnabled ? 'active' : ''}`}

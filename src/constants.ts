@@ -304,6 +304,8 @@ export const TRANSLATIONS = {
     notificationTitle: "Memento Mori",
     notificationBody: "A new week has begun. {livedPercent}% of your expected path is complete. Make this week count.",
     installApp: "Install App",
+    countdownNote: "Timer Personal Note",
+    countdownNoteDesc: "Show an editable personal note below the timer in fullscreen mode.",
   },
   fa: {
     title: "ممنتو موری (Memento Mori)",
@@ -437,5 +439,7 @@ export const TRANSLATIONS = {
     notificationTitle: "ممنتو موری (Memento Mori)",
     notificationBody: "یک هفته دیگر آغاز شد. {livedPercent}٪ از کل مسیر زندگی پیش‌بینی‌شده شما سپری شده است. قدر این هفته را بدانید.",
     installApp: "نصب برنامه",
+    countdownNote: "یادداشت شخصی تایمر",
+    countdownNoteDesc: "نمایش یک یادداشت قابل ویرایش در زیر تایمر در حالت تمام‌صفحه.",
   }
 };

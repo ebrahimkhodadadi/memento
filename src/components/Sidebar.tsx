@@ -1,4 +1,5 @@
-import { Info, AlertTriangle, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { Info, AlertTriangle, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import { SurvivalCurve } from './SurvivalCurve';
 import { PHILOSOPHICAL_QUOTES } from '../constants';
 import type { Profile, Settings } from '../types';
@@ -23,6 +24,12 @@ export function Sidebar({
   onNextQuote,
   t
 }: SidebarProps) {
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (id: string) => {
+    setCollapsedSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const yearsLived = calculations.stats.lived.days / 365.25;
   const candleNumber = Math.floor(yearsLived) + 1;
 
@@ -54,36 +61,49 @@ export function Sidebar({
       </div>
 
       {/* Birth Details & Birthday Candle box */}
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <h3 style={{ fontSize: '1.1rem' }}>🎉 {settings.language === 'fa' ? 'جزئیات تولد' : 'Birth Details'}</h3>
-        <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
-          <strong>{settings.language === 'fa' ? 'تاریخ و ساعت تولد:' : 'Born:'}</strong>{' '}
-          {getBirthDetailsString()}
+      <div className="glass-panel sidebar-section">
+        <div className="sidebar-section-header" onClick={() => toggleSection('birth-details')}>
+          <h3 style={{ fontSize: '1.1rem', margin: 0 }}>🎉 {settings.language === 'fa' ? 'جزئیات تولد' : 'Birth Details'}</h3>
+          <button className="sidebar-collapse-btn">
+            {collapsedSections['birth-details'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </button>
         </div>
-        
-        {/* Birthday Candle Highlight Box */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'var(--accent-bg)',
-          border: '1px solid var(--accent)',
-          borderRadius: '8px',
-          padding: '10px 14px',
-          marginTop: '4px'
-        }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
-            {settings.language === 'fa' ? 'شمع تولد بعدی شما:' : 'Your Next Candle:'}
-          </span>
-          <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-h)' }}>
-            {candleNumber} 🎂
-          </span>
+        <div className={`sidebar-section-content ${collapsedSections['birth-details'] ? 'collapsed' : ''}`}>
+          <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
+            <strong>{settings.language === 'fa' ? 'تاریخ و ساعت تولد:' : 'Born:'}</strong>{' '}
+            {getBirthDetailsString()}
+          </div>
+          
+          {/* Birthday Candle Highlight Box */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--accent-bg)',
+            border: '1px solid var(--accent)',
+            borderRadius: '8px',
+            padding: '10px 14px',
+            marginTop: '8px'
+          }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+              {settings.language === 'fa' ? 'شمع تولد بعدی شما:' : 'Your Next Candle:'}
+            </span>
+            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-h)' }}>
+              {candleNumber} 🎂
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Circular Progress & Lived Stats */}
-      <div className="glass-panel">
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>{t.lifeLived} / {t.lifeRemaining}</h3>
+      <div className="glass-panel sidebar-section">
+        <div className="sidebar-section-header" onClick={() => toggleSection('life-progress')}>
+          <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{t.lifeLived} / {t.lifeRemaining}</h3>
+          <button className="sidebar-collapse-btn">
+            {collapsedSections['life-progress'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </button>
+        </div>
+        <div className={`sidebar-section-content ${collapsedSections['life-progress'] ? 'collapsed' : ''}`}>
         <div className="progress-container">
           <div className="progress-circle-wrap">
             <svg viewBox="0 0 140 140">
@@ -155,7 +175,7 @@ export function Sidebar({
         {/* Exact age counters */}
         <div style={{ marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
           <h4 style={{ fontSize: '0.9rem', marginBottom: '4px' }}>{t.exactAge}</h4>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-h)' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-h)', whiteSpace: 'nowrap' }}>
             {t.preciseAgeDesc
               .replace('{y}', calculations.age.years.toString())
               .replace('{m}', calculations.age.months.toString())
@@ -180,16 +200,22 @@ export function Sidebar({
             <div className="stat-box-value">{calculations.stats.lived.hours.toLocaleString()}</div>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Uncensored Death Probability & Obituary Reflection */}
       {settings.uncensoredMode && (
-        <div className="glass-panel mortality-section">
-          <h3 className="mortality-title">
-            <AlertTriangle size={16} style={{ color: 'var(--unit-current)' }} />
-            <span style={{ fontSize: '0.95rem' }}>{t.mortalityProb}</span>
-          </h3>
-          
+        <div className="glass-panel mortality-section sidebar-section">
+          <div className="sidebar-section-header" onClick={() => toggleSection('mortality')}>
+            <h3 className="mortality-title" style={{ margin: 0, flex: 1 }}>
+              <AlertTriangle size={16} style={{ color: 'var(--unit-current)' }} />
+              <span style={{ fontSize: '0.95rem' }}>{t.mortalityProb}</span>
+            </h3>
+            <button className="sidebar-collapse-btn">
+              {collapsedSections['mortality'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </button>
+          </div>
+          <div className={`sidebar-section-content ${collapsedSections['mortality'] ? 'collapsed' : ''}`}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
               <span>{t.mortalityProb10Years}</span>
@@ -221,30 +247,39 @@ export function Sidebar({
                 .replace('{daysLeft}', calculations.stats.remaining.days.toLocaleString())}
             </p>
           </div>
+          </div>
         </div>
       )}
 
       {/* Philosophical Quotes */}
-      <div className="glass-panel quote-panel" style={{ flexGrow: 1 }}>
-        <p className="quote-text">
-          {settings.language === 'fa' 
-            ? PHILOSOPHICAL_QUOTES[quoteIndex].quoteFa 
-            : PHILOSOPHICAL_QUOTES[quoteIndex].quoteEn}
-        </p>
-        <p className="quote-author">
-          — {settings.language === 'fa' 
-            ? PHILOSOPHICAL_QUOTES[quoteIndex].authorFa 
-            : PHILOSOPHICAL_QUOTES[quoteIndex].authorEn}
-        </p>
-        
-        <button 
-          className="btn" 
-          onClick={onNextQuote}
-          style={{ marginTop: '4px' }}
-        >
-          <RotateCcw size={12} />
-          <span>{t.nextQuote}</span>
-        </button>
+      <div className="glass-panel quote-panel sidebar-section" style={{ flexGrow: 1 }}>
+        <div className="sidebar-section-header" onClick={() => toggleSection('quotes')}>
+          <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{settings.language === 'fa' ? 'تأملات فلسفی' : 'Philosophical Reflections'}</h3>
+          <button className="sidebar-collapse-btn">
+            {collapsedSections['quotes'] ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </button>
+        </div>
+        <div className={`sidebar-section-content ${collapsedSections['quotes'] ? 'collapsed' : ''}`}>
+          <p className="quote-text">
+            {settings.language === 'fa' 
+              ? PHILOSOPHICAL_QUOTES[quoteIndex].quoteFa 
+              : PHILOSOPHICAL_QUOTES[quoteIndex].quoteEn}
+          </p>
+          <p className="quote-author">
+            — {settings.language === 'fa' 
+              ? PHILOSOPHICAL_QUOTES[quoteIndex].authorFa 
+              : PHILOSOPHICAL_QUOTES[quoteIndex].authorEn}
+          </p>
+          
+          <button 
+            className="btn" 
+            onClick={onNextQuote}
+            style={{ marginTop: '4px' }}
+          >
+            <RotateCcw size={12} />
+            <span>{t.nextQuote}</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

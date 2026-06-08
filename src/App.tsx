@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: Settings = {
   ambientEnabled: false,
   uncensoredMode: true,
   darkMode: false,
+  showCountdownNote: true,
 };
 
 function App() {
@@ -51,6 +52,11 @@ function App() {
 
   const [customMilestones, setCustomMilestones] = useState<Record<string, Milestone[]>>(() => {
     const saved = localStorage.getItem('memento_custom_milestones');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const [countdownNotes, setCountdownNotes] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem('memento_countdown_notes');
     return saved ? JSON.parse(saved) : {};
   });
 
@@ -129,6 +135,24 @@ function App() {
     document.title = settings.language === 'fa' 
       ? 'Memento Mori - زندگی‌شمار و شبیه‌ساز طول عمر فلسفی' 
       : 'Memento Mori - Life Visualizer & Countdown';
+
+    // Update PWA theme-color meta tag based on current theme
+    const themeColors: Record<string, { light: string; dark: string }> = {
+      zen:     { light: '#f5f6f2', dark: '#141a15' },
+      cosmic:  { light: '#f0f3ff', dark: '#090b11' },
+      vintage: { light: '#fcfbf7', dark: '#181512' },
+      minimal: { light: '#ffffff', dark: '#0a0a0a' },
+      aura:    { light: '#fbf8f2', dark: '#1c1714' },
+    };
+    const scheme = themeColors[settings.theme] || themeColors.zen;
+    const color = settings.darkMode ? scheme.dark : scheme.light;
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', color);
   }, [settings]);
 
   useEffect(() => {
@@ -150,6 +174,10 @@ function App() {
     localStorage.setItem('memento_custom_milestones', JSON.stringify(customMilestones));
   }, [customMilestones]);
 
+  useEffect(() => {
+    localStorage.setItem('memento_countdown_notes', JSON.stringify(countdownNotes));
+  }, [countdownNotes]);
+
   // --- Timer & Sound Effect Sync ---
   useEffect(() => {
     const timer = setInterval(() => {
@@ -160,6 +188,11 @@ function App() {
     }, 1000);
     return () => clearInterval(timer);
   }, [settings.soundEnabled]);
+
+  // Sync sound volume to engine on mount and when changed
+  useEffect(() => {
+    soundEngine.setSoundVolume(settings.soundVolume ?? 0.5);
+  }, [settings.soundVolume]);
 
   // Apply Sound Engine Toggles
   useEffect(() => {
@@ -794,6 +827,7 @@ function App() {
         onToggleLanguage={() => setSettings(prev => ({ ...prev, language: prev.language === 'en' ? 'fa' : 'en' }))}
         onToggleDarkMode={() => setSettings(prev => ({ ...prev, darkMode: !prev.darkMode }))}
         onToggleSound={() => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
+        onSoundVolumeChange={(vol: number) => setSettings(prev => ({ ...prev, soundVolume: vol }))}
         onToggleAmbient={() => setSettings(prev => ({ ...prev, ambientEnabled: !prev.ambientEnabled }))}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenProfilePicker={() => setIsProfileModalOpen(true)}
@@ -819,6 +853,19 @@ function App() {
           countdown={calculations.countdown}
           livedPercent={calculations.livedPercent}
           language={settings.language}
+          activeProfileId={activeProfileId}
+          countdownNotes={countdownNotes}
+          onSaveCountdownNote={(id: string, text: string) => setCountdownNotes(prev => ({ ...prev, [id]: text }))}
+          onDeleteCountdownNote={(id: string) => setCountdownNotes(prev => {
+            const copy = { ...prev };
+            delete copy[id];
+            return copy;
+          })}
+          showCountdownNote={settings.showCountdownNote}
+          soundEnabled={settings.soundEnabled}
+          onToggleSound={() => setSettings(prev => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
+          ambientEnabled={settings.ambientEnabled}
+          onToggleAmbient={() => setSettings(prev => ({ ...prev, ambientEnabled: !prev.ambientEnabled }))}
           t={t}
         />
       )}

@@ -58,5 +58,7 @@ export interface Settings {
   uncensoredMode: boolean;
   darkMode: boolean;
   notificationsEnabled?: boolean;
+  soundVolume?: number;
+  showCountdownNote?: boolean;
 }
 

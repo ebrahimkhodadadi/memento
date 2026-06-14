@@ -189,6 +189,18 @@ function App() {
     return () => clearInterval(timer);
   }, [settings.soundEnabled]);
 
+  // Force recalculate when page is restored from bfcache or PWA cache
+  useEffect(() => {
+    const refresh = () => setCurrentTime(new Date());
+    const onVisibility = () => { if (document.visibilityState === 'visible') refresh(); };
+    window.addEventListener('pageshow', refresh);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pageshow', refresh);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
   // Sync sound volume to engine on mount and when changed
   useEffect(() => {
     soundEngine.setSoundVolume(settings.soundVolume ?? 0.5);

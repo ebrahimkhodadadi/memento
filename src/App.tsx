@@ -312,13 +312,26 @@ function App() {
     const totalWeeksLeft = Math.floor(remainingMs / (1000 * 60 * 60 * 24 * 7));
     const totalMonthsLeft = Math.floor(remainingMs / (1000 * 60 * 60 * 24 * 30.4375));
 
-    // Countdown remaining components
-    const remYears = Math.floor(totalDaysLeft / 365.25);
-    const remMonths = Math.floor((totalDaysLeft % 365.25) / 30.4375);
-    const remDays = Math.floor((totalDaysLeft % 365.25) % 30.4375);
-    const remHours = Math.floor((remainingMs / (1000 * 60 * 60)) % 24);
-    const remMinutes = Math.floor((remainingMs / (1000 * 60)) % 60);
-    const remSeconds = Math.floor((remainingMs / 1000) % 60);
+    // Countdown remaining components — cascading from remainingMs
+    const msPerSecond = 1000;
+    const msPerMinute = msPerSecond * 60;
+    const msPerHour = msPerMinute * 60;
+    const msPerDay = msPerHour * 24;
+    const msPerMonth = msPerDay * 30.4375;
+    const msPerYear = msPerDay * 365.25;
+
+    let remMs = remainingMs;
+    const remYears = Math.floor(remMs / msPerYear);
+    remMs -= remYears * msPerYear;
+    const remMonths = Math.floor(remMs / msPerMonth);
+    remMs -= remMonths * msPerMonth;
+    const remDays = Math.floor(remMs / msPerDay);
+    remMs -= remDays * msPerDay;
+    const remHours = Math.floor(remMs / msPerHour);
+    remMs -= remHours * msPerHour;
+    const remMinutes = Math.floor(remMs / msPerMinute);
+    remMs -= remMinutes * msPerMinute;
+    const remSeconds = Math.floor(remMs / msPerSecond);
 
     return {
       birthDate,
